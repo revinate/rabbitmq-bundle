@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "08e3b065c155f961ca61efb32a8c3861",
+    "hash": "d851200db2498c287142f05c6580d5a6",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -130,17 +130,17 @@
         },
         {
             "name": "oldsound/rabbitmq-bundle",
-            "version": "dev-master",
+            "version": "v1.5.0",
             "target-dir": "OldSound/RabbitMqBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/videlalvaro/RabbitMqBundle.git",
-                "reference": "a15a4eba67324a24234280ace0afb5fc45605f3b"
+                "reference": "0c84f33f0233c29526cfca41bf6434119f917996"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/videlalvaro/RabbitMqBundle/zipball/a15a4eba67324a24234280ace0afb5fc45605f3b",
-                "reference": "a15a4eba67324a24234280ace0afb5fc45605f3b",
+                "url": "https://api.github.com/repos/videlalvaro/RabbitMqBundle/zipball/0c84f33f0233c29526cfca41bf6434119f917996",
+                "reference": "0c84f33f0233c29526cfca41bf6434119f917996",
                 "shasum": ""
             },
             "require": {
@@ -155,7 +155,7 @@
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.6.x-dev"
+                    "dev-master": "1.2.x-dev"
                 }
             },
             "autoload": {
@@ -179,7 +179,7 @@
                 "queue",
                 "rabbitmq"
             ],
-            "time": "2015-01-28 16:22:31"
+            "time": "2014-06-21 12:15:53"
         },
         {
             "name": "psr/log",
@@ -1210,9 +1210,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "oldsound/rabbitmq-bundle": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

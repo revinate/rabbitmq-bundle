@@ -1127,61 +1127,6 @@
         "homepage": "http://symfony.com"
     },
     {
-        "name": "oldsound/rabbitmq-bundle",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "target-dir": "OldSound/RabbitMqBundle",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/videlalvaro/RabbitMqBundle.git",
-            "reference": "a15a4eba67324a24234280ace0afb5fc45605f3b"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/videlalvaro/RabbitMqBundle/zipball/a15a4eba67324a24234280ace0afb5fc45605f3b",
-            "reference": "a15a4eba67324a24234280ace0afb5fc45605f3b",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0",
-            "symfony/framework-bundle": "~2.1",
-            "symfony/yaml": "~2.0",
-            "videlalvaro/php-amqplib": "~2.4.0"
-        },
-        "require-dev": {
-            "symfony/console": "~2.0"
-        },
-        "time": "2015-01-28 16:22:31",
-        "type": "symfony-bundle",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.6.x-dev"
-            }
-        },
-        "installation-source": "source",
-        "autoload": {
-            "psr-0": {
-                "OldSound\\RabbitMqBundle\\": ""
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Alvaro Videla"
-            }
-        ],
-        "description": "Integrates php-amqplib with Symfony2 and RabbitMq",
-        "keywords": [
-            "Symfony2",
-            "message",
-            "queue",
-            "rabbitmq"
-        ]
-    },
-    {
         "name": "symfony/console",
         "version": "v2.6.4",
         "version_normalized": "2.6.4.0",
@@ -1239,5 +1184,60 @@
         ],
         "description": "Symfony Console Component",
         "homepage": "http://symfony.com"
+    },
+    {
+        "name": "oldsound/rabbitmq-bundle",
+        "version": "v1.5.0",
+        "version_normalized": "1.5.0.0",
+        "target-dir": "OldSound/RabbitMqBundle",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/videlalvaro/RabbitMqBundle.git",
+            "reference": "0c84f33f0233c29526cfca41bf6434119f917996"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/videlalvaro/RabbitMqBundle/zipball/0c84f33f0233c29526cfca41bf6434119f917996",
+            "reference": "0c84f33f0233c29526cfca41bf6434119f917996",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0",
+            "symfony/framework-bundle": "~2.1",
+            "symfony/yaml": "~2.0",
+            "videlalvaro/php-amqplib": "~2.4.0"
+        },
+        "require-dev": {
+            "symfony/console": "~2.0"
+        },
+        "time": "2014-06-21 12:15:53",
+        "type": "symfony-bundle",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.2.x-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "OldSound\\RabbitMqBundle\\": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Alvaro Videla"
+            }
+        ],
+        "description": "Integrates php-amqplib with Symfony2 and RabbitMq",
+        "keywords": [
+            "Symfony2",
+            "message",
+            "queue",
+            "rabbitmq"
+        ]
     }
 ]
