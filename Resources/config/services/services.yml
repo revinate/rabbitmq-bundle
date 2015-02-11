@@ -1,4 +1,0 @@
-services:
-    inguest.amqp_event.producer:
-        class: Revinate\RabbitMqBundle\AMQP\AMQPEventProducer
-        arguments: ['@service_container']
