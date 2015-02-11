@@ -26,7 +26,7 @@
       <file leaf-file-name="Configuration.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/DependencyInjection/Configuration.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="21" selection-start="1161" selection-end="1161" vertical-scroll-proportion="-9.230769" vertical-offset="480" max-vertical-offset="5860">
+            <state line="43" column="24" selection-start="1319" selection-end="1319" vertical-scroll-proportion="-14.615385" vertical-offset="480" max-vertical-offset="5860">
               <folding>
                 <element signature="e#63#123#0" expanded="true" />
               </folding>
@@ -37,7 +37,7 @@
       <file leaf-file-name="composer.json" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/composer.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="45" selection-start="502" selection-end="502" vertical-scroll-proportion="0.34437087" vertical-offset="0" max-vertical-offset="755">
+            <state line="13" column="44" selection-start="501" selection-end="501" vertical-scroll-proportion="0.34437087" vertical-offset="0" max-vertical-offset="755">
               <folding />
             </state>
           </provider>
@@ -655,7 +655,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/DependencyInjection/Configuration.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="21" selection-start="1161" selection-end="1161" vertical-scroll-proportion="-9.230769" vertical-offset="480" max-vertical-offset="5860">
+        <state line="43" column="24" selection-start="1319" selection-end="1319" vertical-scroll-proportion="-14.615385" vertical-offset="480" max-vertical-offset="5860">
           <folding>
             <element signature="e#63#123#0" expanded="true" />
           </folding>
@@ -664,7 +664,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/composer.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="45" selection-start="502" selection-end="502" vertical-scroll-proportion="0.34437087" vertical-offset="0" max-vertical-offset="755">
+        <state line="13" column="44" selection-start="501" selection-end="501" vertical-scroll-proportion="0.34437087" vertical-offset="0" max-vertical-offset="755">
           <folding />
         </state>
       </provider>
