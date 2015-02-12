@@ -22,7 +22,7 @@ abstract class EventBaseAMQPListener {
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->producer = $this->container->get('inguest.amqp_event.producer');
+        $this->producer = $this->container->get('revinate.amqp_event.producer');
     }
 
     /**
