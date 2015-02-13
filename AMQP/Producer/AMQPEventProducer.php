@@ -1,30 +1,63 @@
 <?php
-namespace Revinate\RabbitMqBundle\AMQP;
+namespace Revinate\RabbitMqBundle\AMQP\Producer;
 
 use OldSound\RabbitMqBundle\RabbitMq\BaseAmqp;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Exception\AMQPProtocolException;
 use PhpAmqpLib\Message\AMQPMessage;
+use Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange;
 use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class AMQPEventProducer extends BaseAmqp {
+/**
+ * Class AMQPEventProducer
+ * @package Revinate\RabbitMqBundle\AMQP
+ */
+class AMQPEventProducer {
     /** @var ContainerInterface */
     protected $container;
-    /** @var \OldSound\RabbitMqBundle\RabbitMq\Producer  */
-    protected $producer;
-    /** @var \OldSound\RabbitMqBundle\RabbitMq\Producer  */
-    protected $delayedProducer;
+    /** @var  string */
+    protected $name;
+    /** @var  AMQPConnection */
+    protected $connection;
+    /** @var  AMQPExchange */
+    protected $exchange;
     /** @var array */
     protected $applicationHeaders = array();
 
     /**
      * @param ContainerInterface $container
+     * @param $name
+     * @param string $connection
+     * @param string $exchange
      */
-    public function __construct(ContainerInterface $container) {
+    public function __construct(ContainerInterface $container, $name, $connection, $exchange) {
         $this->container = $container;
-        $this->producer = $this->container->get("old_sound_rabbit_mq.inguest_event_producer");
-        $this->delayedProducer = $this->container->get("old_sound_rabbit_mq.inguest_event_delayed_producer");
+        $this->name = $name;
+        $this->connection = $this->container->get("revinate_rabbit_mq.connection.$connection");
+        $this->exchange = $this->container->get("revinate_rabbit_mq.connection.$exchange");
+    }
+
+    /**
+     * @return \PhpAmqpLib\Connection\AMQPConnection
+     */
+    public function getConnection() {
+        return $this->connection;
+    }
+
+    /**
+     * @return AMQPExchange
+     */
+    public function getExchange() {
+        return $this->exchange;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
@@ -36,7 +69,7 @@ class AMQPEventProducer extends BaseAmqp {
         if (! $message instanceof AMQPEventMessage) {
             $message = new AMQPEventMessage($message, $routingKey);
         }
-        $this->amqpPublish($this->producer, $message, $routingKey);
+        $this->amqpPublish($message, $routingKey);
     }
 
     /**
@@ -45,7 +78,7 @@ class AMQPEventProducer extends BaseAmqp {
      */
     public function rePublish(AMQPEventMessage $amqpEventMessage, $newEventName = null) {
         $newEventName = $newEventName ? $newEventName : $amqpEventMessage->getRoutingKey();
-        $this->amqpPublish($this->producer, $amqpEventMessage, $newEventName);
+        $this->amqpPublish($amqpEventMessage, $newEventName);
     }
 
     /**
@@ -59,25 +92,25 @@ class AMQPEventProducer extends BaseAmqp {
         $amqpEventMessage = new AMQPEventMessage($message, $routingKey);
         $amqpEventMessage->setFairnessKey($fairnessKey);
         $amqpEventMessage->setUnfairnessDelay($delayUnfairMessagesForMs);
-        $this->amqpPublish($this->producer, $amqpEventMessage, $routingKey);
+        $this->amqpPublish($amqpEventMessage, $routingKey);
     }
 
     /**
      * @param AMQPEventMessage $amqpEventMessage
      * @param int $requeueInMs Requeue in these many millisecs
+     * @deprecated
      */
     public function rePublishForLater(AMQPEventMessage $amqpEventMessage, $requeueInMs) {
-        $amqpEventMessage->setExpiration($requeueInMs);
-        $this->amqpPublish($this->delayedProducer, $amqpEventMessage, $amqpEventMessage->getRoutingKey());
+        //$amqpEventMessage->setExpiration($requeueInMs);
+        $this->amqpPublish($amqpEventMessage, $amqpEventMessage->getRoutingKey());
     }
 
     /**
-     * @param \OldSound\RabbitMqBundle\RabbitMq\Producer $producer
      * @param AMQPEventMessage $amqpEventMessage
      * @param $routingKey
      * @internal param $message
      */
-    protected function amqpPublish($producer, AMQPEventMessage $amqpEventMessage, $routingKey) {
+    protected function amqpPublish(AMQPEventMessage $amqpEventMessage, $routingKey) {
         $encodedMessage = json_encode($amqpEventMessage->getMessage());
         $properties = array(
             AMQPEventMessage::CONTENT_TYPE_PROPERTY => $amqpEventMessage->getContentType(),
@@ -86,15 +119,7 @@ class AMQPEventProducer extends BaseAmqp {
             AMQPEventMessage::EXPIRATION_PROPERTY => $amqpEventMessage->getExpiration()
         );
         $msg = new AMQPMessage($encodedMessage, $properties);
-        $producer->getChannel()->basic_publish($msg, $producer->exchangeOptions['name'], $routingKey);
-    }
-
-    /**
-     * Setup Fabric
-     */
-    protected function autoSetupFabric() {
-        if ($this->producer->autoSetupFabric) {
-            $this->producer->setupFabric();
-        }
+        $channel = $this->getConnection()->channel();
+        $channel->basic_publish($msg, $this->getExchange()->getName(), $routingKey);
     }
 }

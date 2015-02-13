@@ -1,7 +1,14 @@
+parameters:
+    revinate_rabbit_mq.connection.class: PhpAmqpLib\Connection\AMQPConnection
+    revinate_rabbit_mq.lazy.connection.class: PhpAmqpLib\Connection\AMQPLazyConnection
+    revinate_rabbit_mq.queue.class: Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue
+    revinate_rabbit_mq.exchange.class: Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange
+    revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\AMQP\Producer\AMQPEventProducer
+    revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer
 services:
     revinate.amqp_event.producer:
-        class: Revinate\RabbitMqBundle\AMQP\AMQPEventProducer
+        class: Revinate\RabbitMqBundle\AMQP\Producer\AMQPEventProducer
         arguments: [@service_container]
     revinate.amqp_event.consumer:
-        class: Revinate\RabbitMqBundle\AMQP\AMQPEventConsumer
+        class: Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer
         arguments: [@service_container]

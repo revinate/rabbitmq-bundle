@@ -38,17 +38,17 @@ class AMQPEventConsumerCommand extends ContainerAwareCommand {
      * @see Symfony\Component\Console\Command\Command::execute()
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
-        $consumerName = $input->getArgument('consumerName');
-        $prefetchCount = intval($input->getArgument('prefetchCount'));
-        $prefetchCount = $prefetchCount ?: 1;
-        $consumerService = "revinate_rabbit_mq.consumer.$consumerName";
-
-        /** @var \Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer $consumer */
-        $consumer = $this->getContainer()->get($consumerService);
-        try {
-            $consumer->consume($prefetchCount);
-        } catch (AMQPTimeoutException $e) {
-            ;
-        }
+//        $consumerName = $input->getArgument('consumerName');
+//        $prefetchCount = intval($input->getArgument('prefetchCount'));
+//        $prefetchCount = $prefetchCount ?: 1;
+//        $consumerService = "revinate_rabbit_mq.consumer.$consumerName";
+//
+//        /** @var \Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer $consumer */
+//        $consumer = $this->getContainer()->get($consumerService);
+//        try {
+//            $consumer->consume($prefetchCount);
+//        } catch (AMQPTimeoutException $e) {
+//            ;
+//        }
     }
 }
