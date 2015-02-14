@@ -1,6 +1,6 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Command;
+namespace Revinate\RabbitMqBundle\Command;
 
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
