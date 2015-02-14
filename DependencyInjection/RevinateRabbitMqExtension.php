@@ -112,7 +112,6 @@ class RevinateRabbitMqExtension extends Extension
         foreach ($this->config['producers'] as $key => $producer) {
             $definition = new Definition('%revinate_rabbit_mq.producer.class%', array(
                 $key,
-                $this->getConnection($producer['connection']),
                 $this->getExchange($producer['exchange']),
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
