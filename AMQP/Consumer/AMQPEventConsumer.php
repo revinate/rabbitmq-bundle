@@ -8,6 +8,7 @@ use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectDropException;
 use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\FairnessAlgorithmInterface;
 use Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\NotConsecutiveFairnessAlgorithm;
+use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -67,5 +68,24 @@ class AMQPEventConsumer implements ConsumerInterface {
      */
     protected function getEventNameFromRoutingKey($routingKey) {
         return $routingKey;
+    }
+
+    /**
+     * @param AMQPMessage $message
+     * @return AMQPEventMessage|Event
+     */
+    protected function getAMQPEventMessage(AMQPMessage $message) {
+        $routingKey = $message->delivery_info['routing_key'];
+        $properties = $message->get_properties();
+        $headers = $properties['application_headers'];
+        return new AMQPEventMessage(json_decode($message->body, true), $routingKey, $headers);
+    }
+
+    /**
+     * @param AMQPEventMessage $amqpEventMessage
+     * @return bool
+     */
+    protected function isFairPublishMessage(AMQPEventMessage $amqpEventMessage) {
+         return !is_null($amqpEventMessage->getFairnessKey());
     }
 }

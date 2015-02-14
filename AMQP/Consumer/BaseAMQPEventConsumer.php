@@ -54,29 +54,7 @@ class BaseAMQPEventConsumer {
      * @return SingleAMQPEventProcessor
      */
     public function getMessageProcessor() {
-        if (is_null($this->getCallback())) {
-            throw new NoConsumerCallbackForMessageException("No callback specified for consumer: " . $this->getName());
-        }
        return new SingleAMQPEventProcessor($this);
-    }
-
-    /**
-     * @param AMQPMessage $message
-     * @return AMQPEventMessage|Event
-     */
-    protected function getAMQPEventMessage(AMQPMessage $message) {
-        $routingKey = $message->delivery_info['routing_key'];
-        $properties = $message->get_properties();
-        $headers = $properties['application_headers'];
-        return new AMQPEventMessage(json_decode($message->body, true), $routingKey, $headers);
-    }
-
-    /**
-     * @param AMQPEventMessage $amqpEventMessage
-     * @return bool
-     */
-    protected function isFairPublishMessage(AMQPEventMessage $amqpEventMessage) {
-         return !is_null($amqpEventMessage->getFairnessKey());
     }
 
     /**
@@ -201,9 +179,13 @@ class BaseAMQPEventConsumer {
     }
 
     /**
+     * @throws \Revinate\RabbitMqBundle\AMQP\Exceptions\NoConsumerCallbackForMessageException
      * @return null
      */
     public function getCallback() {
+        if (is_null($this->callback)) {
+            throw new NoConsumerCallbackForMessageException("No callback specified for consumer: " . $this->getName());
+        }
         return $this->callback;
     }
 
