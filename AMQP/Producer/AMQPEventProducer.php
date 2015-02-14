@@ -25,13 +25,12 @@ class AMQPEventProducer {
 
     /**
      * @param $name
-     * @param string $connection
-     * @param string $exchange
+     * @param AMQPExchange $exchange
      */
-    public function __construct($name, $connection, $exchange) {
+    public function __construct($name, AMQPExchange $exchange) {
         $this->name = $name;
-        $this->connection = $connection;
-        $this->exchange = $exchange;
+        $this->exchange = $exchange->getConnection();
+        $this->connection = $exchange->getConnection();
     }
 
     /**

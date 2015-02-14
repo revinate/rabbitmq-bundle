@@ -37,12 +37,11 @@ class BaseAMQPEventConsumer {
 
     /**
      * @param $name
-     * @param $connection
      * @param $queue
      */
-    public function __construct($name, $connection, $queue) {
+    public function __construct($name, AMQPQueue $queue) {
         $this->name = $name;
-        $this->connection = $connection;
+        $this->connection = $queue->getExchange()->getConnection();
         $this->queue = $queue;
         $this->channel = $this->connection->channel();
         $this->messageProcessor = $this->getMessageProcessor();

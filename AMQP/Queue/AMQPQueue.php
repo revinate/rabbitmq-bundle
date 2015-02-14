@@ -35,7 +35,6 @@ class AMQPQueue {
 
     /**
      * @param $name
-     * @param $connection
      * @param $exchange
      * @param $passive
      * @param $durable
@@ -47,11 +46,11 @@ class AMQPQueue {
      * @param $ticket
      * @throws InvalidQueueConfigurationException
      */
-    public function __construct($name, $connection, $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
+    public function __construct($name, AMQPExchange $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
         if (empty($name) || empty($exchange)) {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
-        $this->connection = $connection;
+        $this->connection = $exchange->getConnection();
         $this->exchange = $exchange;
         $this->name = $name;
         $this->passive = $passive;

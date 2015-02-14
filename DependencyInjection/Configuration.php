@@ -33,6 +33,31 @@ class Configuration implements ConfigurationInterface
     /**
      * @param ArrayNodeDefinition $node
      */
+    protected function addConnections(ArrayNodeDefinition $node)
+    {
+        $node
+            ->children()
+                ->arrayNode('connections')
+                    ->useAttributeAsKey('key')
+                    ->canBeUnset()
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('host')->defaultValue('localhost')->end()
+                            ->scalarNode('port')->defaultValue(5672)->end()
+                            ->scalarNode('user')->defaultValue('guest')->end()
+                            ->scalarNode('password')->defaultValue('guest')->end()
+                            ->scalarNode('vhost')->defaultValue('/')->end()
+                            ->booleanNode('lazy')->defaultFalse()->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+    }
+
+    /**
+     * @param ArrayNodeDefinition $node
+     */
     protected function addExchanges(ArrayNodeDefinition $node)
     {
         $node
@@ -71,7 +96,6 @@ class Configuration implements ConfigurationInterface
                     ->canBeUnset()
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('connection')->isRequired()->end()
                             ->scalarNode('exchange')->isRequired()->end()
                             ->booleanNode('passive')->defaultFalse()->end()
                             ->booleanNode('durable')->defaultTrue()->end()
@@ -94,31 +118,6 @@ class Configuration implements ConfigurationInterface
     /**
      * @param ArrayNodeDefinition $node
      */
-    protected function addConnections(ArrayNodeDefinition $node)
-    {
-        $node
-            ->children()
-                ->arrayNode('connections')
-                    ->useAttributeAsKey('key')
-                    ->canBeUnset()
-                    ->prototype('array')
-                        ->children()
-                            ->scalarNode('host')->defaultValue('localhost')->end()
-                            ->scalarNode('port')->defaultValue(5672)->end()
-                            ->scalarNode('user')->defaultValue('guest')->end()
-                            ->scalarNode('password')->defaultValue('guest')->end()
-                            ->scalarNode('vhost')->defaultValue('/')->end()
-                            ->booleanNode('lazy')->defaultFalse()->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end()
-        ;
-    }
-
-    /**
-     * @param ArrayNodeDefinition $node
-     */
     protected function addProducers(ArrayNodeDefinition $node)
     {
         $node
@@ -128,7 +127,6 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('key')
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('connection')->defaultValue('default')->end()
                             ->scalarNode('exchange')->defaultValue(null)->end()
                         ->end()
                     ->end()
@@ -149,7 +147,6 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('key')
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('connection')->defaultValue('default')->end()
                             ->scalarNode('queue')->defaultValue(null)->end()
                             ->scalarNode('callback')->isRequired()->end()
                             ->scalarNode('idle_timeout')->end()

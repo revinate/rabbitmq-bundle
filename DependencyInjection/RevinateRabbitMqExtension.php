@@ -91,7 +91,6 @@ class RevinateRabbitMqExtension extends Extension
         foreach ($this->config['queues'] as $key => $queue) {
             $definition = new Definition('%revinate_rabbit_mq.queue.class%', array(
                 $key,
-                $this->getConnection($queue['connection']),
                 $this->getExchange($queue['exchange']),
                 $queue['passive'],
                 $queue['durable'],
@@ -127,7 +126,6 @@ class RevinateRabbitMqExtension extends Extension
         foreach ($this->config['consumers'] as $key => $consumer) {
             $definition = new Definition('%revinate_rabbit_mq.consumer.class%', array(
                 $key,
-                $this->getConnection($consumer['connection']),
                 $this->getQueue($consumer['queue'])
             ));
             $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
