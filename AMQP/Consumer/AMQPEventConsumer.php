@@ -20,14 +20,13 @@ class AMQPEventConsumer extends BaseAMQPEventConsumer implements ConsumerInterfa
     protected $fairnessAlgorithm;
 
     /**
-     * @param ContainerInterface $container
      * @param $name
      * @param string $connection
      * @param string $queue
      */
-    public function __construct(ContainerInterface $container, $name, $connection, $queue) {
+    public function __construct($name, $connection, $queue) {
         $this->fairnessAlgorithm = new NotConsecutiveFairnessAlgorithm();
-        parent::__construct($container, $name, $container, $queue);
+        parent::__construct($name, $connection, $queue);
     }
 
     /**

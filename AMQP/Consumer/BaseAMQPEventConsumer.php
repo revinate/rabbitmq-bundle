@@ -14,8 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 abstract class BaseAMQPEventConsumer {
-    /** @var ContainerInterface */
-    protected $container;
     /** @var string */
     protected $name;
     /** @var AMQPConnection */
@@ -38,17 +36,15 @@ abstract class BaseAMQPEventConsumer {
     protected $consumerTag;
 
     /**
-     * @param ContainerInterface $container
      * @param $name
      * @param $connection
      * @param $queue
      */
-    public function __construct(ContainerInterface $container, $name, $connection, $queue) {
-        $this->container = $container;
+    public function __construct($name, $connection, $queue) {
         $this->name = $name;
-        $this->connection = $this->container->get("revinate_rabbit_mq.connection.$connection");
+        $this->connection = $connection;
+        $this->queue = $queue;
         $this->channel = $this->connection->channel();
-        $this->queue = $this->container->get("revinate_rabbit_mq.connection.$queue");
         $this->messageProcessor = $this->getMessageProcessor();
         $this->consumerTag = sprintf("PHPPROCESS_%s_%s", gethostname(), getmypid());
     }

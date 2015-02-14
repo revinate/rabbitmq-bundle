@@ -8,9 +8,6 @@ use Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class AMQPQueue {
-
-    /** @var  ContainerInterface */
-    protected $container;
     /** @var  string */
     protected $name;
     /** @var  AMQPConnection */
@@ -37,7 +34,6 @@ class AMQPQueue {
     protected $isDeclared = false;
 
     /**
-     * @param ContainerInterface $container
      * @param $name
      * @param $connection
      * @param $exchange
@@ -51,13 +47,12 @@ class AMQPQueue {
      * @param $ticket
      * @throws InvalidQueueConfigurationException
      */
-    public function __construct(ContainerInterface $container, $name, $connection, $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
+    public function __construct($name, $connection, $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
         if (empty($name) || empty($exchange)) {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
-        $this->container = $container;
-        $this->connection = $this->container->get("revinate_rabbit_mq.connection.$connection");
-        $this->exchange = $this->container->get("revinate_rabbit_mq.exchange.$exchange");
+        $this->connection = $connection;
+        $this->exchange = $exchange;
         $this->name = $name;
         $this->passive = $passive;
         $this->durable = $durable;

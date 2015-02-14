@@ -12,10 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class AMQPExchange {
 
     /**
-     * @var ContainerInterface
-     */
-    protected $container;
-    /**
      * @var AMQPConnection
      */
     protected $connection;
@@ -61,7 +57,6 @@ class AMQPExchange {
     protected $isDeclared = false;
 
     /**
-     * @param ContainerInterface $container
      * @param $name
      * @param $connection
      * @param $type
@@ -74,12 +69,11 @@ class AMQPExchange {
      * @param $ticket
      * @throws InvalidExchangeConfigurationException
      */
-    function __construct(ContainerInterface $container, $name, $connection, $type, $passive, $durable, $autoDelete, $internal, $noWait, $arguments, $ticket) {
+    function __construct($name, $connection, $type, $passive, $durable, $autoDelete, $internal, $noWait, $arguments, $ticket) {
         if (empty($name) || empty($type)) {
             throw new InvalidExchangeConfigurationException("Please specify Exchange name and type to declare an exchange.");
         }
-        $this->container = $container;
-        $this->connection = $this->container->get("revinate_rabbit_mq.connection.$connection");
+        $this->connection = $connection;
         $this->name = $name;
         $this->type = $type;
         $this->passive = $passive;

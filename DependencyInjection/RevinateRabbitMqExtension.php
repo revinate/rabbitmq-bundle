@@ -69,9 +69,8 @@ class RevinateRabbitMqExtension extends Extension
     protected function loadExchanges() {
         foreach ($this->config['exchanges'] as $key => $exchange) {
             $definition = new Definition('%revinate_rabbit_mq.exchange.class%', array(
-                $this->container,
                 $key,
-                $exchange['connection'],
+                $this->getConnection($exchange['connection']),
                 $exchange['type'],
                 $exchange['passive'],
                 $exchange['durable'],
@@ -91,10 +90,9 @@ class RevinateRabbitMqExtension extends Extension
     protected function loadQueues() {
         foreach ($this->config['queues'] as $key => $queue) {
             $definition = new Definition('%revinate_rabbit_mq.queue.class%', array(
-                $this->container,
                 $key,
-                $queue['connection'],
-                $queue['exchange'],
+                $this->getConnection($queue['connection']),
+                $this->getExchange($queue['exchange']),
                 $queue['passive'],
                 $queue['durable'],
                 $queue['exclusive'],
@@ -113,10 +111,9 @@ class RevinateRabbitMqExtension extends Extension
     protected function loadProducers() {
         foreach ($this->config['producers'] as $key => $producer) {
             $definition = new Definition('%revinate_rabbit_mq.producer.class%', array(
-                $this->container,
                 $key,
-                $producer['connection'],
-                $producer['exchange'],
+                $this->getConnection($producer['connection']),
+                $this->getExchange($producer['exchange']),
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
         }
@@ -128,10 +125,9 @@ class RevinateRabbitMqExtension extends Extension
     protected function loadConsumers() {
         foreach ($this->config['consumers'] as $key => $consumer) {
             $definition = new Definition('%revinate_rabbit_mq.consumer.class%', array(
-                $this->container,
                 $key,
-                $consumer['connection'],
-                $consumer['queue']
+                $this->getConnection($consumer['connection']),
+                $this->getQueue($consumer['queue'])
             ));
             $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
             if (array_key_exists('qos_options', $consumer)) {
@@ -143,5 +139,29 @@ class RevinateRabbitMqExtension extends Extension
             }
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.consumer.%s', $key), $definition);
         }
+    }
+
+    /**
+     * @param $connectionName
+     * @return Reference
+     */
+    protected function getConnection($connectionName) {
+        return new Reference(sprintf('revinate_rabbit_mq.connection.%s', $connectionName));
+    }
+
+    /**
+     * @param $exchangeName
+     * @return Reference
+     */
+    protected function getExchange($exchangeName) {
+        return new Reference(sprintf('revinate_rabbit_mq.exchange.%s', $exchangeName));
+    }
+
+    /**
+     * @param $queueName
+     * @return Reference
+     */
+    protected function getQueue($queueName) {
+        return new Reference(sprintf('revinate_rabbit_mq.queue.%s', $queueName));
     }
 }

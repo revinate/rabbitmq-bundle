@@ -14,8 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Revinate\RabbitMqBundle\AMQP
  */
 class AMQPEventProducer {
-    /** @var ContainerInterface */
-    protected $container;
     /** @var  string */
     protected $name;
     /** @var  AMQPConnection */
@@ -26,16 +24,14 @@ class AMQPEventProducer {
     protected $applicationHeaders = array();
 
     /**
-     * @param ContainerInterface $container
      * @param $name
      * @param string $connection
      * @param string $exchange
      */
-    public function __construct(ContainerInterface $container, $name, $connection, $exchange) {
-        $this->container = $container;
+    public function __construct($name, $connection, $exchange) {
         $this->name = $name;
-        $this->connection = $this->container->get("revinate_rabbit_mq.connection.$connection");
-        $this->exchange = $this->container->get("revinate_rabbit_mq.connection.$exchange");
+        $this->connection = $connection;
+        $this->exchange = $exchange;
     }
 
     /**
