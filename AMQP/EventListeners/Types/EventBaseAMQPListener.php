@@ -13,8 +13,6 @@ abstract class EventBaseAMQPListener {
 
     /** @var ContainerInterface */
     protected $container;
-    /** @var \Revinate\RabbitMqBundle\AMQP\AMQPEventProducer  */
-    protected $producer;
 
     /**
      * @param ContainerInterface $container
@@ -22,7 +20,6 @@ abstract class EventBaseAMQPListener {
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->producer = $this->container->get('revinate.amqp_event.producer');
     }
 
     /**
@@ -31,13 +28,6 @@ abstract class EventBaseAMQPListener {
     public function getContainer()
     {
         return $this->container;
-    }
-
-    /**
-     * @return \Revinate\RabbitMqBundle\AMQP\AMQPEventProducer
-     */
-    public function getProducer() {
-        return $this->producer;
     }
 
     /**
