@@ -5,6 +5,7 @@ namespace Revinate\RabbitMqBundle\AMQP\Consumer\Processor;
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer;
 use Revinate\RabbitMqBundle\AMQP\Consumer\ConsumerInterface;
+use Revinate\RabbitMqBundle\AMQP\Consumer\DeliveryResponse;
 
 class BatchedAMQPEventProcessor implements AMQPEventProcessorInterface {
 
@@ -53,13 +54,13 @@ class BatchedAMQPEventProcessor implements AMQPEventProcessorInterface {
     protected function confirmOrRejectDelivery($messages, $processFlags) {
         foreach ($messages as $index => $message) {
             $processFlag = $processFlags[$index];
-            if ($processFlag === ConsumerInterface::MSG_REJECT_REQUEUE || false === $processFlag) {
+            if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
                 // Reject and requeue message to RabbitMQ
                 $message->delivery_info['channel']->basic_reject($message->delivery_info['delivery_tag'], true);
-            } else if ($processFlag === ConsumerInterface::MSG_SINGLE_NACK_REQUEUE) {
+            } else if ($processFlag === DeliveryResponse::MSG_SINGLE_NACK_REQUEUE) {
                 // NACK and requeue message to RabbitMQ
                 $message->delivery_info['channel']->basic_nack($message->delivery_info['delivery_tag'], false, true);
-            } else if ($processFlag === ConsumerInterface::MSG_REJECT) {
+            } else if ($processFlag === DeliveryResponse::MSG_REJECT) {
                 // Reject and drop
                 $message->delivery_info['channel']->basic_reject($message->delivery_info['delivery_tag'], false);
             } else {
