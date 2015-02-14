@@ -13,7 +13,7 @@ use Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
-abstract class BaseAMQPEventConsumer {
+class BaseAMQPEventConsumer {
     /** @var string */
     protected $name;
     /** @var AMQPConnection */
