@@ -75,9 +75,9 @@ class RevinateRabbitMqExtension extends Extension
                 $exchange['type'],
                 $exchange['passive'],
                 $exchange['durable'],
-                $exchange['autoDelete'],
+                $exchange['auto_delete'],
                 $exchange['internal'],
-                $exchange['noWait'],
+                $exchange['nowait'],
                 $exchange['arguments'],
                 $exchange['ticket'],
             ));
@@ -98,10 +98,10 @@ class RevinateRabbitMqExtension extends Extension
                 $queue['passive'],
                 $queue['durable'],
                 $queue['exclusive'],
-                $queue['autoDelete'],
-                $queue['noWait'],
+                $queue['auto_delete'],
+                $queue['nowait'],
                 $queue['arguments'],
-                $queue['routingKeys'],
+                $queue['routing_keys'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
         }
