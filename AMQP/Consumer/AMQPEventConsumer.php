@@ -2,7 +2,7 @@
 namespace Revinate\RabbitMqBundle\AMQP\Consumer;
 
 use PhpAmqpLib\Message\AMQPMessage;
-use Revinate\RabbitMqBundle\AMQP\ConsumerInterface;
+use Revinate\RabbitMqBundle\AMQP\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectDropException;
 use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\FairnessAlgorithmInterface;

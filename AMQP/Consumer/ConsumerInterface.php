@@ -1,6 +1,6 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP;
+namespace Revinate\RabbitMqBundle\AMQP\Consumer;
 
 use PhpAmqpLib\Message\AMQPMessage;
 

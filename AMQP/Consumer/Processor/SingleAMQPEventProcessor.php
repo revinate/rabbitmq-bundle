@@ -4,7 +4,7 @@ namespace Revinate\RabbitMqBundle\AMQP\Consumer\Processor;
 
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer;
-use Revinate\RabbitMqBundle\AMQP\ConsumerInterface;
+use Revinate\RabbitMqBundle\AMQP\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\AMQP\Exceptions\NoConsumerCallbackForMessageException;
 
 class SingleAMQPEventProcessor implements AMQPEventProcessorInterface {
