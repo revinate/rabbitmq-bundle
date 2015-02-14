@@ -100,6 +100,7 @@ class RevinateRabbitMqExtension extends Extension
                 $queue['nowait'],
                 $queue['arguments'],
                 $queue['routing_keys'],
+                $queue['ticket'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
         }

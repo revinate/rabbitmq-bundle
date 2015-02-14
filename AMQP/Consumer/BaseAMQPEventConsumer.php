@@ -55,7 +55,7 @@ class BaseAMQPEventConsumer {
      */
     public function getMessageProcessor() {
         if (is_null($this->getCallback())) {
-            throw new NoConsumerCallbackForMessageException("No callback specified for consumer" . $this->getName());
+            throw new NoConsumerCallbackForMessageException("No callback specified for consumer: " . $this->getName());
         }
        return new SingleAMQPEventProcessor($this);
     }
