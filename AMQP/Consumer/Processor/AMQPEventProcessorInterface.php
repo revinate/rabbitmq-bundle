@@ -3,17 +3,16 @@
 namespace Revinate\RabbitMqBundle\AMQP\Consumer\Processor;
 
 use PhpAmqpLib\Message\AMQPMessage;
-use Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer;
+use Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer;
 
 interface AMQPEventProcessorInterface {
 
     /**
-     * @param BaseAMQPEventConsumer $baseConsumer
+     * @param AMQPEventConsumer $baseConsumer
      */
-    public function __construct(BaseAMQPEventConsumer $baseConsumer);
+    public function __construct(AMQPEventConsumer $baseConsumer);
     /**
      * @param AMQPMessage $message
-     * @return mixed
      */
     public function processMessage(AMQPMessage $message);
 }

@@ -4,7 +4,7 @@ namespace Revinate\RabbitMqBundle\AMQP\Consumer;
 
 use PhpAmqpLib\Message\AMQPMessage;
 
-interface BatchedConsumerInterface
+interface BatchConsumerInterface
 {
     /**
      * @param AMQPMessage[] $messages

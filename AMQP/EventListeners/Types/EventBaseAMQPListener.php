@@ -2,12 +2,7 @@
 
 namespace Revinate\RabbitMqBundle\AMQP\EventListeners\Types;
 
-use Doctrine\ORM\EntityManager;
-use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
-use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectDropException;
-use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class EventBaseAMQPListener {
 
@@ -23,7 +18,7 @@ abstract class EventBaseAMQPListener {
     }
 
     /**
-     * @return \Symfony\Component\DependencyInjection\ContainerInterface
+     * @return ContainerInterface
      */
     public function getContainer()
     {

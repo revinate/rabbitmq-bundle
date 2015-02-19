@@ -43,10 +43,11 @@ class AMQPEventConsumerCommand extends ContainerAwareCommand {
         $prefetchCount = $prefetchCount ?: 1;
         $consumerService = "revinate_rabbit_mq.consumer.$consumerName";
 
-        /** @var \Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer $baseConsumer */
-        $baseConsumer = $this->getContainer()->get($consumerService);
+        // Create batch or single consumer based on the type of consumer
+        /** @var \Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer $consumer */
+        $consumer = $this->getContainer()->get($consumerService);
         try {
-            $baseConsumer->consume($prefetchCount);
+            $consumer->consume($prefetchCount);
         } catch (AMQPTimeoutException $e) {
             ;
         }

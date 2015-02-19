@@ -3,51 +3,54 @@
 namespace Revinate\RabbitMqBundle\AMQP\Consumer\Processor;
 
 use PhpAmqpLib\Message\AMQPMessage;
-use Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer;
-use Revinate\RabbitMqBundle\AMQP\Consumer\ConsumerInterface;
-use Revinate\RabbitMqBundle\AMQP\Consumer\DeliveryResponse;
-use Revinate\RabbitMqBundle\AMQP\Exceptions\NoConsumerCallbackForMessageException;
+use Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer;
 
-class SingleAMQPEventProcessor implements AMQPEventProcessorInterface {
+class SingleAMQPEventProcessor extends BaseAMQPEventProcessor implements AMQPEventProcessorInterface {
 
-    /** @var BaseAMQPEventConsumer  */
+    /** @var AMQPEventConsumer  */
     protected $consumer;
 
     /**
-     * @param BaseAMQPEventConsumer $consumer
+     * @param AMQPEventConsumer $consumer
      */
-    public function __construct(BaseAMQPEventConsumer $consumer) {
+    public function __construct(AMQPEventConsumer $consumer) {
         $this->consumer = $consumer;
     }
-
     /**
      * @param AMQPMessage $message
-     * @throws \Revinate\RabbitMqBundle\AMQP\Exceptions\NoConsumerCallbackForMessageException
      * @return mixed|void
      */
     public function processMessage(AMQPMessage $message) {
-        $processFlag = call_user_func($this->consumer->getCallback(), $message);
-        $this->confirmOrRejectDelivery($message, $processFlag);
+        $processFlag = $this->callConsumerCallback($message);
+        $this->consumer->ackOrNackMessage($message, $processFlag);
         $this->consumer->incrementConsumed(1);
     }
 
     /**
      * @param AMQPMessage $message
-     * @param $processFlag
+     * @return int
      */
-    protected function confirmOrRejectDelivery(AMQPMessage $message, $processFlag) {
-        if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
-            // Reject and requeue message to RabbitMQ
-            $message->delivery_info['channel']->basic_reject($message->delivery_info['delivery_tag'], true);
-        } else if ($processFlag === DeliveryResponse::MSG_SINGLE_NACK_REQUEUE) {
-            // NACK and requeue message to RabbitMQ
-            $message->delivery_info['channel']->basic_nack($message->delivery_info['delivery_tag'], false, true);
-        } else if ($processFlag === DeliveryResponse::MSG_REJECT) {
-            // Reject and drop
-            $message->delivery_info['channel']->basic_reject($message->delivery_info['delivery_tag'], false);
-        } else {
-            // Remove message from queue only if callback return not false
-            $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+    public function callConsumerCallback($message) {
+        $processFlag =  DeliveryResponse::MSG_ACK;
+        $amqpEventMessage = $this->consumer->getAMQPEventMessage($message);
+        $amqpEventMessage->setDequeuedAt(new \DateTime('now'));
+        $fairnessAlgorithm = $this->consumer->getFairnessAlgorithm();
+        try {
+            if (!$this->consumer->isFairPublishMessage($amqpEventMessage) || $fairnessAlgorithm->isFairToProcess($amqpEventMessage)) {
+                call_user_func($this->consumer->getCallback(), $amqpEventMessage);
+                $amqpEventMessage->setProcessedAt(new \DateTime('now'));
+            } else {
+                error_log("Event Requeued due to unfairness. Key: " . $amqpEventMessage->getFairnessKey());
+                $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
+            }
+        } catch (RejectRequeueException $e) {
+            error_log("Event Requeued due to processing error: " . $e->getMessage());
+            $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
+        } catch (RejectDropException $e) {
+            error_log("Event Dropped due to processing error: " . $e->getMessage());
+            $processFlag = DeliveryResponse::MSG_REJECT;
         }
+        $fairnessAlgorithm->onMessageProcessed($amqpEventMessage);
+        return $processFlag;
     }
 }

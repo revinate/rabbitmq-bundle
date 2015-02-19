@@ -4,7 +4,7 @@ parameters:
     revinate_rabbit_mq.queue.class: Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue
     revinate_rabbit_mq.exchange.class: Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange
     revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\AMQP\Producer\AMQPEventProducer
-    revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\AMQP\Consumer\BaseAMQPEventConsumer
+    revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer
 
 services:
     revinate.amqp_event.consumer:

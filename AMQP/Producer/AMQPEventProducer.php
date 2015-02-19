@@ -1,13 +1,10 @@
 <?php
 namespace Revinate\RabbitMqBundle\AMQP\Producer;
 
-use OldSound\RabbitMqBundle\RabbitMq\BaseAmqp;
 use PhpAmqpLib\Connection\AMQPConnection;
-use PhpAmqpLib\Exception\AMQPProtocolException;
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange;
 use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class AMQPEventProducer
@@ -69,11 +66,12 @@ class AMQPEventProducer {
 
     /**
      * @param AMQPEventMessage $amqpEventMessage
-     * @param null $newEventName New Event Name under which to publish this message
+     * @param null $newRoutingKey New Event Name under which to publish this message
      */
-    public function rePublish(AMQPEventMessage $amqpEventMessage, $newEventName = null) {
-        $newEventName = $newEventName ? $newEventName : $amqpEventMessage->getRoutingKey();
-        $this->amqpPublish($amqpEventMessage, $newEventName);
+    public function rePublish(AMQPEventMessage $amqpEventMessage, $newRoutingKey = null) {
+        $newRoutingKey = $newRoutingKey ? $newRoutingKey : $amqpEventMessage->getRoutingKey();
+        $amqpEventMessage->incrementRetryCount();
+        $this->amqpPublish($amqpEventMessage, $newRoutingKey);
     }
 
     /**
@@ -88,16 +86,6 @@ class AMQPEventProducer {
         $amqpEventMessage->setFairnessKey($fairnessKey);
         $amqpEventMessage->setUnfairnessDelay($delayUnfairMessagesForMs);
         $this->amqpPublish($amqpEventMessage, $routingKey);
-    }
-
-    /**
-     * @param AMQPEventMessage $amqpEventMessage
-     * @param int $requeueInMs Requeue in these many millisecs
-     * @deprecated
-     */
-    public function rePublishForLater(AMQPEventMessage $amqpEventMessage, $requeueInMs) {
-        //$amqpEventMessage->setExpiration($requeueInMs);
-        $this->amqpPublish($amqpEventMessage, $amqpEventMessage->getRoutingKey());
     }
 
     /**

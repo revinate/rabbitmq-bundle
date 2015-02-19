@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\Event;
  * @TODO: Add Type
  * @TODO: Way to convert entity into message
  */
-class AMQPEventMessage extends Event {
+class AMQPEventMessage {
     const CONTENT_TYPE_PROPERTY = 'content_type';
     const DELIVERY_MODE_PROPERTY = 'delivery_mode';
     const APPLICATION_HEADERS_PROPERTY = 'application_headers';
@@ -60,6 +60,20 @@ class AMQPEventMessage extends Event {
     public function getCreatedAt()
     {
         return DateHelper::convertDateToDateTime($this->getHeader('createdAt'));
+    }
+
+    /**
+     * Increments retry count when message is requeued
+     */
+    public function incrementRetryCount() {
+        $this->addHeader('retryCount', $this->getRetryCount() + 1);
+    }
+
+    /**
+     * @return int
+     */
+    public function getRetryCount() {
+        return (int)$this->getHeader('retryCount');
     }
 
     /**

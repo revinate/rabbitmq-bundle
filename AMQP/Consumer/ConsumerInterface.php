@@ -7,8 +7,8 @@ use PhpAmqpLib\Message\AMQPMessage;
 interface ConsumerInterface
 {
     /**
-     * @param AMQPMessage $msg
+     * @param AMQPMessage $message
      * @return int
      */
-    public function execute(AMQPMessage $msg);
+    public function execute(AMQPMessage $message);
 }
