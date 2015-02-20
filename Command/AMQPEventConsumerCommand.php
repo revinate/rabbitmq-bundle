@@ -4,13 +4,14 @@ namespace Revinate\RabbitMqBundle\Command;
 
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerAware;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
+/**
+ * Class AMQPEventConsumerCommand
+ * @package Revinate\RabbitMqBundle\Command
+ */
 class AMQPEventConsumerCommand extends ContainerAwareCommand {
     const COMMAND_NAME = 'revinate:rabbitmq:consumer';
 

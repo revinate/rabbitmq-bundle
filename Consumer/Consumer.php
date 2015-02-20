@@ -12,8 +12,15 @@ use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
 use Revinate\RabbitMqBundle\Queue\Queue;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Class Consumer
+ * @package Revinate\RabbitMqBundle\Consumer
+ */
 class Consumer {
+    /** @var \Symfony\Component\DependencyInjection\ContainerInterface  */
+    protected $container;
     /** @var string */
     protected $name;
     /** @var AMQPConnection */
@@ -29,7 +36,9 @@ class Consumer {
     /** @var int  */
     protected $consumed = 0;
     /** @var */
-    protected $callback = null;
+    protected $callback;
+    /** @var   */
+    protected $setContainerCallback;
     /** @var int  */
     protected $idleTimeout = 0;
     /** @var  string */
@@ -45,7 +54,8 @@ class Consumer {
      * @param $name
      * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      */
-    public function __construct($name, Queue $queue) {
+    public function __construct(ContainerInterface $container, $name, Queue $queue) {
+        $this->container = $container;
         $this->name = $name;
         $this->connection = $queue->getExchange()->getConnection();
         $this->queue = $queue;
@@ -232,6 +242,22 @@ class Consumer {
     }
 
     /**
+     * @param mixed $setContainerCallback
+     */
+    public function setSetContainerCallback($setContainerCallback)
+    {
+        $this->setContainerCallback = $setContainerCallback;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSetContainerCallback()
+    {
+        return $this->setContainerCallback;
+    }
+
+    /**
      * @param string $consumerTag
      */
     public function setConsumerTag($consumerTag)
@@ -358,4 +384,13 @@ class Consumer {
             return new Message(json_decode($amqpMessage->body, true), $routingKey, $headers);
         }
     }
+
+    /**
+     * @return \Symfony\Component\DependencyInjection\ContainerInterface
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
 }

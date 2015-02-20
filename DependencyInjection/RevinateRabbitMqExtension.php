@@ -2,14 +2,11 @@
 
 namespace Revinate\RabbitMqBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Config\FileLocator;
 
 /**
@@ -25,6 +22,10 @@ class RevinateRabbitMqExtension extends Extension
     /** @var array */
     private $config = array();
 
+    /**
+     * @param array $configs
+     * @param ContainerBuilder $container
+     */
     public function load(array $configs, ContainerBuilder $container) {
         $this->container = $container;
         $configuration = new Configuration();
@@ -124,10 +125,12 @@ class RevinateRabbitMqExtension extends Extension
     protected function loadConsumers() {
         foreach ($this->config['consumers'] as $key => $consumer) {
             $definition = new Definition('%revinate_rabbit_mq.consumer.class%', array(
+                $this->getContainer(),
                 $key,
                 $this->getQueue($consumer['queue']),
             ));
             $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
+            $definition->addMethodCall('setSetContainerCallback', array(array(new Reference($consumer['callback']), 'setContainer')));
             $definition->addMethodCall('setBatchSize', array($consumer['batch_size']));
             $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
             if (isset($consumer['fairness_algorithm'])) {
@@ -142,6 +145,13 @@ class RevinateRabbitMqExtension extends Extension
             }
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.consumer.%s', $key), $definition);
         }
+    }
+
+    /**
+     * Returns Service Container
+     */
+    protected function getContainer() {
+        return new Reference('service_container');
     }
 
     /**

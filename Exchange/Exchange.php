@@ -3,7 +3,6 @@
 namespace Revinate\RabbitMqBundle\Exchange;
 use PhpAmqpLib\Connection\AMQPConnection;
 use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class Exchange

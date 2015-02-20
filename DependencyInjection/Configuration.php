@@ -12,6 +12,9 @@ use \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
  */
 class Configuration implements ConfigurationInterface
 {
+    /**
+     * @return TreeBuilder
+     */
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
@@ -35,6 +38,7 @@ class Configuration implements ConfigurationInterface
      */
     protected function addConnections(ArrayNodeDefinition $node)
     {
+        /** @noinspection PhpUndefinedMethodInspection */
         $node
             ->children()
                 ->arrayNode('connections')
@@ -60,6 +64,7 @@ class Configuration implements ConfigurationInterface
      */
     protected function addExchanges(ArrayNodeDefinition $node)
     {
+        /** @noinspection PhpUndefinedMethodInspection */
         $node
             ->children()
                 ->arrayNode('exchanges')

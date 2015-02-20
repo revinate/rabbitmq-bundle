@@ -5,7 +5,14 @@ namespace Revinate\RabbitMqBundle\Consumer\Processor;
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
+use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
+use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
+use Revinate\RabbitMqBundle\Message\Message;
 
+/**
+ * Class BatchMessageProcessor
+ * @package Revinate\RabbitMqBundle\Consumer\Processor
+ */
 class BatchMessageProcessor extends BaseMessageProcessor implements MessageProcessorInterface {
 
     /** @var Consumer  */
@@ -52,21 +59,25 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      */
     public function callConsumerCallback($amqpMessages) {
         $processFlag =  DeliveryResponse::MSG_ACK;
-        $amqpEventMessages = array();
+        /** @var Message[] $messages */
+        $messages = array();
         foreach ($amqpMessages as $amqpMessage) {
             $message = $this->consumer->getMessageFromAMQPMessage($amqpMessage);
             $message->setDequeuedAt(new \DateTime('now'));
-            $amqpEventMessages[] = $message;
+            $messages[] = $message;
         }
-        $firstMessage = $amqpEventMessages[0];
+        $firstMessage = $messages[0];
         $fairnessAlgorithm = $this->consumer->getFairnessAlgorithm();
-        $isFairPublishMessage = $this->consumer->isFairPublishMessage($message);
+        $isFairPublishMessage = $this->consumer->isFairPublishMessage($firstMessage);
         try {
             if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
-                call_user_func($this->consumer->getCallback(), $amqpEventMessages);
-                $message->setProcessedAt(new \DateTime('now'));
+                call_user_func($this->consumer->getSetContainerCallback(), $this->consumer->getContainer());
+                call_user_func_array($this->consumer->getCallback(), array($messages));
+                foreach ($messages as $message) {
+                    $message->setProcessedAt(new \DateTime('now'));
+                }
             } else {
-                error_log("Event Requeued due to unfairness. Key: " . $message->getFairnessKey());
+                error_log("Event Requeued due to unfairness. Key: " . $firstMessage->getFairnessKey());
                 $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
             }
         } catch (RejectRequeueException $e) {

@@ -2,6 +2,10 @@
 
 namespace Revinate\RabbitMqBundle\Consumer;
 
+/**
+ * Class DeliveryResponse
+ * @package Revinate\RabbitMqBundle\Consumer
+ */
 class DeliveryResponse {
 
     /**

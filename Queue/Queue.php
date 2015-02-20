@@ -5,8 +5,11 @@ namespace Revinate\RabbitMqBundle\Queue;
 use PhpAmqpLib\Connection\AMQPConnection;
 use Revinate\RabbitMqBundle\Exceptions\InvalidQueueConfigurationException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Class Queue
+ * @package Revinate\RabbitMqBundle\Queue
+ */
 class Queue {
     /** @var  string */
     protected $name;

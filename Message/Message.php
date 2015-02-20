@@ -2,9 +2,8 @@
 
 namespace Revinate\RabbitMqBundle\Message;
 
-use Revinate\SharedBundle\Lib\DateHelper;
-use Revinate\SharedBundle\Lib\Tools;
-use Symfony\Component\EventDispatcher\Event;
+use Revinate\RabbitMqBundle\Lib\DateHelper;
+use Revinate\RabbitMqBundle\Lib\TextHelper;
 
 /**
  * Class Message
@@ -43,7 +42,7 @@ class Message {
         if (!empty($headers)) {
             $this->setHeaders($headers);
         } else {
-            $this->addHeader('id', Tools::getRandomString(8));
+            $this->addHeader('id', TextHelper::getRandomString(16));
         }
     }
 

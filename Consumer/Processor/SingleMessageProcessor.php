@@ -5,7 +5,13 @@ namespace Revinate\RabbitMqBundle\Consumer\Processor;
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
+use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
+use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
 
+/**
+ * Class SingleMessageProcessor
+ * @package Revinate\RabbitMqBundle\Consumer\Processor
+ */
 class SingleMessageProcessor extends BaseMessageProcessor implements MessageProcessorInterface {
 
     /** @var Consumer  */
@@ -39,7 +45,8 @@ class SingleMessageProcessor extends BaseMessageProcessor implements MessageProc
         $isFairPublishMessage = $this->consumer->isFairPublishMessage($message);
         try {
             if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($message)) {
-                call_user_func($this->consumer->getCallback(), $message);
+                call_user_func($this->consumer->getSetContainerCallback(), $this->consumer->getContainer());
+                call_user_func_array($this->consumer->getCallback(), array($message));
                 $message->setProcessedAt(new \DateTime('now'));
             } else {
                 error_log("Event Requeued due to unfairness. Key: " . $message->getFairnessKey());

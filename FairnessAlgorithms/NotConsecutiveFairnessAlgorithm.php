@@ -4,6 +4,10 @@ namespace Revinate\RabbitMqBundle\FairnessAlgorithms;
 
 use Revinate\RabbitMqBundle\Message\Message;
 
+/**
+ * Class NotConsecutiveFairnessAlgorithm
+ * @package Revinate\RabbitMqBundle\FairnessAlgorithms
+ */
 class NotConsecutiveFairnessAlgorithm implements FairnessAlgorithmInterface {
 
     /** @var string|null  */
