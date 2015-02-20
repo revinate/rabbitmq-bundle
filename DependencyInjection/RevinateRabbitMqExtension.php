@@ -128,17 +128,17 @@ class RevinateRabbitMqExtension extends Extension
                 $this->getQueue($consumer['queue']),
             ));
             $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
-            $definition->addMethodCall('setBatchSize', [$consumer['batch_size']]);
-            $definition->addMethodCall('setMessageClass', [$consumer['message_class']]);
+            $definition->addMethodCall('setBatchSize', array($consumer['batch_size']));
+            $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
             if (isset($consumer['fairness_algorithm'])) {
-                $definition->addMethodCall('setFairnessAlgorithm', [new Reference($consumer['fairness_algorithm'])]);
+                $definition->addMethodCall('setFairnessAlgorithm', array(new Reference($consumer['fairness_algorithm'])));
             }
             if (array_key_exists('qos_options', $consumer)) {
-                $definition->addMethodCall('setQosOptions', [
+                $definition->addMethodCall('setQosOptions', array(
                     $consumer['qos_options']['prefetch_size'],
                     $consumer['qos_options']['prefetch_count'],
                     $consumer['qos_options']['global']
-                ]);
+                ));
             }
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.consumer.%s', $key), $definition);
         }
