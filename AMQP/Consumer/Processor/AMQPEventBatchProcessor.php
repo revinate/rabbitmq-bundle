@@ -8,18 +8,19 @@ use Revinate\RabbitMqBundle\AMQP\Consumer\DeliveryResponse;
 
 class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEventProcessorInterface {
 
-    const BATCH_SIZE = 10;
-
     /** @var AMQPEventConsumer  */
     protected $consumer;
     /** @var AMQPMessage[] */
     protected $messages;
+    /** @var  int */
+    protected $batchSize;
 
     /**
      * @param AMQPEventConsumer $consumer
      */
     public function __construct(AMQPEventConsumer $consumer) {
         $this->consumer = $consumer;
+        $this->batchSize = $this->consumer->getBatchSize();
     }
 
     /**
@@ -29,7 +30,7 @@ class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEven
      */
     public function processMessage(AMQPMessage $message) {
         $this->messages[] = $message;
-        if (count($this->messages) >= $this->consumer->getBatchSize()) {
+        if (count($this->messages) >= $this->batchSize) {
             $this->processMessagesInBatch();
         }
     }
@@ -38,8 +39,8 @@ class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEven
      *
      */
     protected function processMessagesInBatch() {
-        $messages = array_slice($this->messages, 0, self::BATCH_SIZE);
-        $this->messages = array_slice($this->messages, self::BATCH_SIZE);
+        $messages = array_slice($this->messages, 0, $this->batchSize);
+        $this->messages = array_slice($this->messages, $this->batchSize);
         $processFlag = $this->callConsumerCallback($messages);
         $this->ackOrNackMessage($messages, $processFlag);
         $this->consumer->incrementConsumed(count($messages));

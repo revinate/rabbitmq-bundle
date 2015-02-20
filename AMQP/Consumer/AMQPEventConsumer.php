@@ -50,7 +50,6 @@ class AMQPEventConsumer {
         $this->connection = $queue->getExchange()->getConnection();
         $this->queue = $queue;
         $this->channel = $this->connection->channel();
-        $this->messageProcessor = !$this->isBatchConsumer() ? new SingleAMQPEventProcessor($this) : new AMQPEventBatchProcessor($this);
         $this->consumerTag = sprintf("PHPPROCESS_%s_%s", gethostname(), getmypid());
     }
 
@@ -67,6 +66,7 @@ class AMQPEventConsumer {
      */
     public function consume($messageCount) {
         $this->target = $messageCount;
+        $this->messageProcessor = !$this->isBatchConsumer() ? new SingleAMQPEventProcessor($this) : new AMQPEventBatchProcessor($this);
         $this->setupConsumer();
         while (count($this->getChannel()->callbacks)) {
             $this->maybeStopConsumer();
