@@ -1,6 +1,6 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Consumer;
+namespace Revinate\RabbitMqBundle\Consumer;
 
 class DeliveryResponse {
 

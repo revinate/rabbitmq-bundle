@@ -1,19 +1,19 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Consumer;
+namespace Revinate\RabbitMqBundle\Consumer;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
-use Revinate\RabbitMqBundle\AMQP\Consumer\Processor\AMQPEventProcessorInterface;
-use Revinate\RabbitMqBundle\AMQP\Consumer\Processor\AMQPEventBatchProcessor;
-use Revinate\RabbitMqBundle\AMQP\Consumer\Processor\SingleAMQPEventProcessor;
-use Revinate\RabbitMqBundle\AMQP\Exceptions\NoConsumerCallbackForMessageException;
-use Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue;
-use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
-use Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\FairnessAlgorithmInterface;
+use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
+use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
+use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
+use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
+use Revinate\RabbitMqBundle\Queue\AMQPQueue;
+use Revinate\RabbitMqBundle\Message\Message;
+use Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface;
 
-class AMQPEventConsumer {
+class Consumer {
     /** @var string */
     protected $name;
     /** @var AMQPConnection */
@@ -22,7 +22,7 @@ class AMQPEventConsumer {
     protected $channel;
     /** @var AMQPQueue */
     protected $queue;
-    /** @var AMQPEventProcessorInterface  */
+    /** @var MessageProcessorInterface  */
     protected $messageProcessor;
     /** @var int  */
     protected $target = 1;
@@ -43,7 +43,7 @@ class AMQPEventConsumer {
 
     /**
      * @param $name
-     * @param \Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue $queue
+     * @param \Revinate\RabbitMqBundle\Queue\AMQPQueue $queue
      */
     public function __construct($name, AMQPQueue $queue) {
         $this->name = $name;
@@ -66,7 +66,7 @@ class AMQPEventConsumer {
      */
     public function consume($messageCount) {
         $this->target = $messageCount;
-        $this->messageProcessor = !$this->isBatchConsumer() ? new SingleAMQPEventProcessor($this) : new AMQPEventBatchProcessor($this);
+        $this->messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
         $this->setupConsumer();
         while (count($this->getChannel()->callbacks)) {
             $this->maybeStopConsumer();
@@ -120,12 +120,12 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @param AMQPMessage $message
+     * @param AMQPMessage $amqpMessage
      * @param $processFlag
      */
-    public function ackOrNackMessage(AMQPMessage $message, $processFlag) {
-        $channel = $message->delivery_info['channel'];
-        $deliveryTag = $message->delivery_info['delivery_tag'];
+    public function ackOrNackMessage(AMQPMessage $amqpMessage, $processFlag) {
+        $channel = $amqpMessage->delivery_info['channel'];
+        $deliveryTag = $amqpMessage->delivery_info['delivery_tag'];
         if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
@@ -221,7 +221,7 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @throws \Revinate\RabbitMqBundle\AMQP\Exceptions\NoConsumerCallbackForMessageException
+     * @throws \Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException
      * @return null
      */
     public function getCallback() {
@@ -288,7 +288,7 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @param \Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\FairnessAlgorithmInterface $fairnessAlgorithm
+     * @param \Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface $fairnessAlgorithm
      */
     public function setFairnessAlgorithm($fairnessAlgorithm)
     {
@@ -296,7 +296,7 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @return \Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\FairnessAlgorithmInterface
+     * @return \Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface
      */
     public function getFairnessAlgorithm()
     {
@@ -304,7 +304,7 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @param \Revinate\RabbitMqBundle\AMQP\Consumer\Processor\AMQPEventProcessorInterface $messageProcessor
+     * @param \Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface $messageProcessor
      */
     public function setMessageProcessor($messageProcessor)
     {
@@ -312,7 +312,7 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @return \Revinate\RabbitMqBundle\AMQP\Consumer\Processor\AMQPEventProcessorInterface
+     * @return \Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface
      */
     public function getMessageProcessor()
     {
@@ -336,26 +336,26 @@ class AMQPEventConsumer {
     }
 
     /**
-     * @param AMQPEventMessage $amqpEventMessage
+     * @param Message $message
      * @return bool
      */
-    public function isFairPublishMessage(AMQPEventMessage $amqpEventMessage) {
-        return !is_null($amqpEventMessage->getFairnessKey());
+    public function isFairPublishMessage(Message $message) {
+        return !is_null($message->getFairnessKey());
     }
 
     /**
-     * @param AMQPMessage $message
-     * @return AMQPEventMessage
+     * @param AMQPMessage $amqpMessage
+     * @return Message
      */
-    public function getAMQPEventMessage(AMQPMessage $message) {
-        $routingKey = $message->delivery_info['routing_key'];
-        $properties = $message->get_properties();
+    public function getMessageFromAMQPMessage(AMQPMessage $amqpMessage) {
+        $routingKey = $amqpMessage->delivery_info['routing_key'];
+        $properties = $amqpMessage->get_properties();
         $headers = $properties['application_headers'];
         if ($this->getMessageClass()) {
             $messageClass = $this->getMessageClass();
-            return new $messageClass(json_decode($message->body, true), $routingKey, $headers);
+            return new $messageClass(json_decode($amqpMessage->body, true), $routingKey, $headers);
         } else {
-            return new AMQPEventMessage(json_decode($message->body, true), $routingKey, $headers);
+            return new Message(json_decode($amqpMessage->body, true), $routingKey, $headers);
         }
     }
 }

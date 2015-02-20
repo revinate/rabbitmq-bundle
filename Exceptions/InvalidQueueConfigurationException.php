@@ -1,6 +1,6 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Exceptions;
+namespace Revinate\RabbitMqBundle\Exceptions;
 
 class InvalidQueueConfigurationException extends \Exception {
 }

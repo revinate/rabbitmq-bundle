@@ -1,19 +1,19 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Message;
+namespace Revinate\RabbitMqBundle\Message;
 
 use Revinate\SharedBundle\Lib\DateHelper;
 use Revinate\SharedBundle\Lib\Tools;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Class AMQPEventMessage
- * @package Revinate\RabbitMqBundle\AMQP\Message
+ * Class Message
+ * @package Revinate\RabbitMqBundle\Message
  * @TODO: Add support for original event id
  * @TODO: Add Type
  * @TODO: Way to convert entity into message
  */
-class AMQPEventMessage {
+class Message {
     const CONTENT_TYPE_PROPERTY = 'content_type';
     const DELIVERY_MODE_PROPERTY = 'delivery_mode';
     const APPLICATION_HEADERS_PROPERTY = 'application_headers';
@@ -27,18 +27,18 @@ class AMQPEventMessage {
     /** @var  int */
     protected $expiration;
     /** @var  array|string|int */
-    protected $message;
+    protected $data;
 
     /** @var array message headers */
     protected $headers = array();
 
     /**
-     * @param $message
+     * @param $data
      * @param $routingKey
      * @param $headers
      */
-    public function __construct($message, $routingKey, $headers = array()) {
-        $this->message = $message;
+    public function __construct($data, $routingKey, $headers = array()) {
+        $this->data = $data;
         $this->addHeader('routingKey', $routingKey);
         if (!empty($headers)) {
             $this->setHeaders($headers);
@@ -87,9 +87,9 @@ class AMQPEventMessage {
     /**
      * @return mixed
      */
-    public function getMessage()
+    public function getData()
     {
-        return $this->message;
+        return $this->data;
     }
 
     /**
@@ -280,7 +280,7 @@ class AMQPEventMessage {
             'id' => $this->getId(),
             'routingKey' => $this->getRoutingKey(),
             'fairnessKey' => $this->getFairnessKey(),
-            'message' => $this->getMessage(),
+            'data' => $this->getData(),
             'createdAt' => $this->getCreatedAt(),
             'dequeuedAt' => $this->getDequeuedAt(),
             'processedAt' => $this->getProcessedAt(),

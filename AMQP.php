@@ -1,6 +1,6 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP;
+namespace Revinate\RabbitMqBundle;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Queue;
+namespace Revinate\RabbitMqBundle\Queue;
 
 use PhpAmqpLib\Connection\AMQPConnection;
-use Revinate\RabbitMqBundle\AMQP\Exceptions\InvalidQueueConfigurationException;
-use Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange;
+use Revinate\RabbitMqBundle\Exceptions\InvalidQueueConfigurationException;
+use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class AMQPQueue {
@@ -12,7 +12,7 @@ class AMQPQueue {
     protected $name;
     /** @var  AMQPConnection */
     protected $connection;
-    /** @var AMQPExchange */
+    /** @var Exchange */
     protected $exchange;
     /** @var  boolean */
     protected $passive = false;
@@ -46,7 +46,7 @@ class AMQPQueue {
      * @param $ticket
      * @throws InvalidQueueConfigurationException
      */
-    public function __construct($name, AMQPExchange $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
+    public function __construct($name, Exchange $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
         if (empty($name) || empty($exchange)) {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
@@ -244,7 +244,7 @@ class AMQPQueue {
     }
 
     /**
-     * @return \Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange
+     * @return \Revinate\RabbitMqBundle\Exchange\Exchange
      */
     public function getExchange()
     {

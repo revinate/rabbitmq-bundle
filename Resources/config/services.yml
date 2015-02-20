@@ -1,14 +1,14 @@
 parameters:
     revinate_rabbit_mq.connection.class: PhpAmqpLib\Connection\AMQPConnection
     revinate_rabbit_mq.lazy.connection.class: PhpAmqpLib\Connection\AMQPLazyConnection
-    revinate_rabbit_mq.queue.class: Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue
-    revinate_rabbit_mq.exchange.class: Revinate\RabbitMqBundle\AMQP\Exchange\AMQPExchange
-    revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\AMQP\Producer\AMQPEventProducer
-    revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer
+    revinate_rabbit_mq.queue.class: Revinate\RabbitMqBundle\Queue\AMQPQueue
+    revinate_rabbit_mq.exchange.class: Revinate\RabbitMqBundle\Exchange\Exchange
+    revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\Producer\AMQPEventProducer
+    revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\Consumer\Consumer
 
 services:
     revinate.amqp_event.consumer:
-        class: Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer
+        class: Revinate\RabbitMqBundle\Consumer\Consumer
         arguments: [@service_container]
     revinate.rabbit_mq.fairness_algorithm.not_consecutive:
-        class: Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\NotConsecutiveFairnessAlgorithm
+        class: Revinate\RabbitMqBundle\FairnessAlgorithms\NotConsecutiveFairnessAlgorithm

@@ -1,15 +1,15 @@
 <?php
 
-namespace Revinate\RabbitMqBundle\AMQP\Exchange;
+namespace Revinate\RabbitMqBundle\Exchange;
 use PhpAmqpLib\Connection\AMQPConnection;
-use Revinate\RabbitMqBundle\AMQP\Exceptions\InvalidExchangeConfigurationException;
+use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class AMQPExchange
+ * Class Exchange
  * Doc: http://www.rabbitmq.com/amqp-0-9-1-reference.html#exchange.bind
  */
-class AMQPExchange {
+class Exchange {
 
     /**
      * @var AMQPConnection
