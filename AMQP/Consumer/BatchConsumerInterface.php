@@ -2,13 +2,11 @@
 
 namespace Revinate\RabbitMqBundle\AMQP\Consumer;
 
-use PhpAmqpLib\Message\AMQPMessage;
-
 interface BatchConsumerInterface
 {
     /**
-     * @param AMQPMessage[] $messages
+     * @param \Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage[] $messages
      * @return int
      */
-    public function execute(Array $messages);
+    public function execute($messages);
 }

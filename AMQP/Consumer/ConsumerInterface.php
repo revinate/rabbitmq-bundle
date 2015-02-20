@@ -2,13 +2,13 @@
 
 namespace Revinate\RabbitMqBundle\AMQP\Consumer;
 
-use PhpAmqpLib\Message\AMQPMessage;
+use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
 
 interface ConsumerInterface
 {
     /**
-     * @param AMQPMessage $message
+     * @param \Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage $message
      * @return int
      */
-    public function execute(AMQPMessage $message);
+    public function execute(AMQPEventMessage $message);
 }

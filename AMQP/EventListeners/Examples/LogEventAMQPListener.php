@@ -2,12 +2,13 @@
 
 namespace Revinate\RabbitMqBundle\AMQP\EventListeners\Examples;
 
+use Revinate\RabbitMqBundle\AMQP\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\AMQP\EventListeners\Types\EventBaseAMQPListener;
 use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectDropException;
 use Revinate\RabbitMqBundle\AMQP\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
 
-class LogEventAMQPListener extends EventBaseAMQPListener {
+class LogEventAMQPListener extends EventBaseAMQPListener implements ConsumerInterface {
 
     /**
      * @param AMQPEventMessage $amqpMessage
