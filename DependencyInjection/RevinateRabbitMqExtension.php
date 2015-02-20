@@ -68,6 +68,7 @@ class RevinateRabbitMqExtension extends Extension
      * Load Exchanges
      */
     protected function loadExchanges() {
+        $servicesDefinition = $this->container->getDefinition('revinate.rabbit_mq.services');
         foreach ($this->config['exchanges'] as $key => $exchange) {
             $definition = new Definition('%revinate_rabbit_mq.exchange.class%', array(
                 $key,
@@ -82,6 +83,7 @@ class RevinateRabbitMqExtension extends Extension
                 $exchange['ticket'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.exchange.%s', $key), $definition);
+            $servicesDefinition->addMethodCall('addExchange', array(new Reference(sprintf('revinate_rabbit_mq.exchange.%s', $key))));
         }
     }
 
@@ -89,6 +91,7 @@ class RevinateRabbitMqExtension extends Extension
      * Load Queues
      */
     protected function loadQueues() {
+        $servicesDefinition = $this->container->getDefinition('revinate.rabbit_mq.services');
         foreach ($this->config['queues'] as $key => $queue) {
             $definition = new Definition('%revinate_rabbit_mq.queue.class%', array(
                 $key,
@@ -103,6 +106,7 @@ class RevinateRabbitMqExtension extends Extension
                 $queue['ticket'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
+            $servicesDefinition->addMethodCall('addQueue', array(new Reference(sprintf('revinate_rabbit_mq.queue.%s', $key))));
         }
     }
 

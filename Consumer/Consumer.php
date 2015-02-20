@@ -51,6 +51,7 @@ class Consumer {
     protected $messageClass = null;
 
     /**
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      * @param $name
      * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      */

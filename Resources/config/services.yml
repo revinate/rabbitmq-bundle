@@ -7,6 +7,8 @@ parameters:
     revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\Consumer\Consumer
 
 services:
+    revinate.rabbit_mq.services:
+        class: Revinate\RabbitMqBundle\Config\Services
     revinate.amqp_event.consumer:
         class: Revinate\RabbitMqBundle\Consumer\Consumer
         arguments: [@service_container]
