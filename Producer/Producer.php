@@ -7,10 +7,10 @@ use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
 
 /**
- * Class AMQPEventProducer
+ * Class Producer
  * @package Revinate\RabbitMqBundle
  */
-class AMQPEventProducer {
+class Producer {
     /** @var  string */
     protected $name;
     /** @var  AMQPConnection */

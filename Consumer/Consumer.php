@@ -9,7 +9,7 @@ use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
 use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
 use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
 use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
-use Revinate\RabbitMqBundle\Queue\AMQPQueue;
+use Revinate\RabbitMqBundle\Queue\Queue;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface;
 
@@ -20,7 +20,7 @@ class Consumer {
     protected $connection;
     /** @var AMQPChannel  */
     protected $channel;
-    /** @var AMQPQueue */
+    /** @var Queue */
     protected $queue;
     /** @var MessageProcessorInterface  */
     protected $messageProcessor;
@@ -43,9 +43,9 @@ class Consumer {
 
     /**
      * @param $name
-     * @param \Revinate\RabbitMqBundle\Queue\AMQPQueue $queue
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      */
-    public function __construct($name, AMQPQueue $queue) {
+    public function __construct($name, Queue $queue) {
         $this->name = $name;
         $this->connection = $queue->getExchange()->getConnection();
         $this->queue = $queue;
@@ -183,7 +183,7 @@ class Consumer {
     }
 
     /**
-     * @return AMQPQueue
+     * @return Queue
      */
     public function getQueue()
     {

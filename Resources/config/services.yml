@@ -1,9 +1,9 @@
 parameters:
     revinate_rabbit_mq.connection.class: PhpAmqpLib\Connection\AMQPConnection
     revinate_rabbit_mq.lazy.connection.class: PhpAmqpLib\Connection\AMQPLazyConnection
-    revinate_rabbit_mq.queue.class: Revinate\RabbitMqBundle\Queue\AMQPQueue
+    revinate_rabbit_mq.queue.class: Revinate\RabbitMqBundle\Queue\Queue
     revinate_rabbit_mq.exchange.class: Revinate\RabbitMqBundle\Exchange\Exchange
-    revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\Producer\AMQPEventProducer
+    revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\Producer\Producer
     revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\Consumer\Consumer
 
 services:

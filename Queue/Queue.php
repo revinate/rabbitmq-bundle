@@ -7,7 +7,7 @@ use Revinate\RabbitMqBundle\Exceptions\InvalidQueueConfigurationException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class AMQPQueue {
+class Queue {
     /** @var  string */
     protected $name;
     /** @var  AMQPConnection */
