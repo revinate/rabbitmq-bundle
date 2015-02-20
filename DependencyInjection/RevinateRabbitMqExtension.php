@@ -23,7 +23,7 @@ class RevinateRabbitMqExtension extends Extension
      */
     private $container;
     /** @var array */
-    private $config = [];
+    private $config = array();
 
     public function load(array $configs, ContainerBuilder $container) {
         $this->container = $container;
@@ -51,13 +51,13 @@ class RevinateRabbitMqExtension extends Extension
                     ? '%revinate_rabbit_mq.lazy.connection.class%'
                     : '%revinate_rabbit_mq.connection.class%';
 
-            $definition = new Definition($classParam, [
+            $definition = new Definition($classParam, array(
                 $connection['host'],
                 $connection['port'],
                 $connection['user'],
                 $connection['password'],
                 $connection['vhost']
-            ]);
+            ));
 
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.connection.%s', $key), $definition);
         }
@@ -68,7 +68,7 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadExchanges() {
         foreach ($this->config['exchanges'] as $key => $exchange) {
-            $definition = new Definition('%revinate_rabbit_mq.exchange.class%', [
+            $definition = new Definition('%revinate_rabbit_mq.exchange.class%', array(
                 $key,
                 $this->getConnection($exchange['connection']),
                 $exchange['type'],
@@ -79,7 +79,7 @@ class RevinateRabbitMqExtension extends Extension
                 $exchange['nowait'],
                 $exchange['arguments'],
                 $exchange['ticket'],
-            ]);
+            ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.exchange.%s', $key), $definition);
         }
     }
@@ -89,7 +89,7 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadQueues() {
         foreach ($this->config['queues'] as $key => $queue) {
-            $definition = new Definition('%revinate_rabbit_mq.queue.class%', [
+            $definition = new Definition('%revinate_rabbit_mq.queue.class%', array(
                 $key,
                 $this->getExchange($queue['exchange']),
                 $queue['passive'],
@@ -100,7 +100,7 @@ class RevinateRabbitMqExtension extends Extension
                 $queue['arguments'],
                 $queue['routing_keys'],
                 $queue['ticket'],
-            ]);
+            ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
         }
     }
@@ -110,10 +110,10 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadProducers() {
         foreach ($this->config['producers'] as $key => $producer) {
-            $definition = new Definition('%revinate_rabbit_mq.producer.class%', [
+            $definition = new Definition('%revinate_rabbit_mq.producer.class%', array(
                 $key,
                 $this->getExchange($producer['exchange']),
-            ]);
+            ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
         }
     }
@@ -123,11 +123,11 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadConsumers() {
         foreach ($this->config['consumers'] as $key => $consumer) {
-            $definition = new Definition('%revinate_rabbit_mq.consumer.class%', [
+            $definition = new Definition('%revinate_rabbit_mq.consumer.class%', array(
                 $key,
                 $this->getQueue($consumer['queue']),
-            ]);
-            $definition->addMethodCall('setCallback', [[new Reference($consumer['callback']), 'execute']]);
+            ));
+            $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
             $definition->addMethodCall('setFairnessAlgorithm', [new Reference($consumer['fairness_algorithm'])]);
             $definition->addMethodCall('setBatchSize', [$consumer['batch_size']]);
             $definition->addMethodCall('setMessageClass', [$consumer['message_class']]);
