@@ -10,3 +10,5 @@ services:
     revinate.amqp_event.consumer:
         class: Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer
         arguments: [@service_container]
+    revinate.rabbit_mq.fairness_algorithm.not_consecutive:
+        class: Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\NotConsecutiveFairnessAlgorithm
