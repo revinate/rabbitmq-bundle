@@ -4,6 +4,7 @@ namespace Revinate\RabbitMqBundle\AMQP\Consumer\Processor;
 
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\AMQP\Consumer\AMQPEventConsumer;
+use Revinate\RabbitMqBundle\AMQP\Consumer\DeliveryResponse;
 
 class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEventProcessorInterface {
 
@@ -50,7 +51,7 @@ class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEven
      */
     public function callConsumerCallback($messages) {
         $processFlag =  DeliveryResponse::MSG_ACK;
-        $amqpEventMessages = [];
+        $amqpEventMessages = array();
         foreach ($messages as $message) {
             $amqpEventMessage = $this->consumer->getAMQPEventMessage($message);
             $amqpEventMessage->setDequeuedAt(new \DateTime('now'));
@@ -58,8 +59,9 @@ class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEven
         }
         $firstMessage = $amqpEventMessages[0];
         $fairnessAlgorithm = $this->consumer->getFairnessAlgorithm();
+        $isFairPublishMessage = $this->consumer->isFairPublishMessage($amqpEventMessage);
         try {
-            if (!$this->consumer->isFairPublishMessage($firstMessage) || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
+            if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
                 call_user_func($this->consumer->getCallback(), $amqpEventMessages);
                 $amqpEventMessage->setProcessedAt(new \DateTime('now'));
             } else {
@@ -73,7 +75,9 @@ class AMQPEventBatchProcessor extends BaseAMQPEventProcessor implements AMQPEven
             error_log("Event Dropped due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT;
         }
-        $fairnessAlgorithm->onMessageProcessed($firstMessage);
+        if ($isFairPublishMessage) {
+            $fairnessAlgorithm->onMessageProcessed($firstMessage);
+        }
         return $processFlag;
     }
 
