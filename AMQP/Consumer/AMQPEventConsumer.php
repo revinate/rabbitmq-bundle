@@ -13,7 +13,7 @@ use Revinate\RabbitMqBundle\AMQP\Queue\AMQPQueue;
 use Revinate\RabbitMqBundle\AMQP\Message\AMQPEventMessage;
 use Revinate\RabbitMqBundle\AMQP\FairnessAlgorithms\FairnessAlgorithmInterface;
 
-abstract class AMQPEventConsumer {
+class AMQPEventConsumer {
     /** @var string */
     protected $name;
     /** @var AMQPConnection */
