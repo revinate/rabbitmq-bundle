@@ -44,10 +44,10 @@ class SetupCommand extends ContainerAwareCommand {
             if (!$exchange->getManaged()) {
                 echo "Skipped : ";
             } else {
-                echo "Declared: ";
                 $exchange->declareExchange();
+                echo "Declared: ";
             }
-            echo "\n" . $exchange->getName();
+            echo $exchange->getName() . "\n" ;
         }
 
         echo "\n\nDeclaring Queues\n";
@@ -56,10 +56,10 @@ class SetupCommand extends ContainerAwareCommand {
             if (!$queue->getManaged()) {
                 echo "Skipped : ";
             } else {
-                echo "Declared: ";
                 $queue->declareQueue();
+                echo "Declared: ";
             }
-            echo "\n" . $queue->getName();
+            echo $queue->getName() . "\n" ;
         }
     }
 }
