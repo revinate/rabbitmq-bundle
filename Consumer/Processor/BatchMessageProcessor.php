@@ -64,6 +64,8 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
         foreach ($amqpMessages as $amqpMessage) {
             $message = $this->consumer->getMessageFromAMQPMessage($amqpMessage);
             $message->setDequeuedAt(new \DateTime('now'));
+            $message->setConsumer($this->consumer);
+            $message->setAmqpMessage($amqpMessage);
             $messages[] = $message;
         }
         $firstMessage = $messages[0];

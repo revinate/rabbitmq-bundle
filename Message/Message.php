@@ -2,6 +2,8 @@
 
 namespace Revinate\RabbitMqBundle\Message;
 
+use PhpAmqpLib\Message\AMQPMessage;
+use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Lib\DateHelper;
 use Revinate\RabbitMqBundle\Lib\TextHelper;
 
@@ -27,6 +29,10 @@ class Message {
     protected $expiration;
     /** @var  array|string|int */
     protected $data;
+    /** @var Consumer */
+    protected $consumer;
+    /** @var  AMQPMessage */
+    protected $amqpMessage;
 
     /** @var array message headers */
     protected $headers = array();
@@ -269,6 +275,38 @@ class Message {
             return 1;
         }
         return $this->getHeader('numberOfEnqueueAttempts');
+    }
+
+    /**
+     * @param \Revinate\RabbitMqBundle\Consumer\Consumer $consumer
+     */
+    public function setConsumer($consumer)
+    {
+        $this->consumer = $consumer;
+    }
+
+    /**
+     * @return \Revinate\RabbitMqBundle\Consumer\Consumer
+     */
+    public function getConsumer()
+    {
+        return $this->consumer;
+    }
+
+    /**
+     * @param \PhpAmqpLib\Message\AMQPMessage $amqpMessage
+     */
+    public function setAmqpMessage($amqpMessage)
+    {
+        $this->amqpMessage = $amqpMessage;
+    }
+
+    /**
+     * @return \PhpAmqpLib\Message\AMQPMessage
+     */
+    public function getAmqpMessage()
+    {
+        return $this->amqpMessage;
     }
 
     /**

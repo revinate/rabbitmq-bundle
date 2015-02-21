@@ -41,6 +41,8 @@ class SingleMessageProcessor extends BaseMessageProcessor implements MessageProc
         $processFlag =  DeliveryResponse::MSG_ACK;
         $message = $this->consumer->getMessageFromAMQPMessage($amqpMessage);
         $message->setDequeuedAt(new \DateTime('now'));
+        $message->setConsumer($this->consumer);
+        $message->setAmqpMessage($amqpMessage);
         $fairnessAlgorithm = $this->consumer->getFairnessAlgorithm();
         $isFairPublishMessage = $this->consumer->isFairPublishMessage($message);
         try {

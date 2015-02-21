@@ -53,25 +53,33 @@ class Producer {
     }
 
     /**
-     * @param $message
-     * @param $eventName
+     * @param array $data
+     * @param string $routingKey
      */
-    public function publish($message, $eventName) {
-        $routingKey = $eventName;
-        if (! $message instanceof Message) {
-            $message = new Message($message, $routingKey);
+    public function publish($data, $routingKey) {
+        if (! $data instanceof Message) {
+            $message = new Message($data, $routingKey);
         }
-        $this->amqpPublish($message, $routingKey);
+        $this->basicPublish($message, $routingKey);
+    }
+
+    /**
+     * @param Message $message
+     */
+    public function rePublishForSelf(Message $message) {
+        $newRoutingKey = $message->getConsumer()->getQueue()->getName();
+        $message->incrementRetryCount();
+        $this->basicPublish($message, $newRoutingKey);
     }
 
     /**
      * @param Message $message
      * @param null $newRoutingKey New Event Name under which to publish this message
      */
-    public function rePublish(Message $message, $newRoutingKey = null) {
+    public function rePublishForAll(Message $message, $newRoutingKey = null) {
         $newRoutingKey = $newRoutingKey ? $newRoutingKey : $message->getRoutingKey();
         $message->incrementRetryCount();
-        $this->amqpPublish($message, $newRoutingKey);
+        $this->basicPublish($message, $newRoutingKey);
     }
 
     /**
@@ -85,7 +93,7 @@ class Producer {
         $message = new Message($data, $routingKey);
         $message->setFairnessKey($fairnessKey);
         $message->setUnfairnessDelay($delayUnfairMessagesForMs);
-        $this->amqpPublish($message, $routingKey);
+        $this->basicPublish($message, $routingKey);
     }
 
     /**
@@ -93,7 +101,7 @@ class Producer {
      * @param $routingKey
      * @internal param $message
      */
-    protected function amqpPublish(Message $message, $routingKey) {
+    protected function basicPublish(Message $message, $routingKey) {
         $encodedMessage = json_encode($message->getData());
         $properties = array(
             Message::CONTENT_TYPE_PROPERTY => $message->getContentType(),

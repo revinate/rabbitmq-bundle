@@ -93,6 +93,9 @@ class Queue {
          } else {
              $channel->queue_bind($queueName, $this->getExchange()->getName(), '');
          }
+        // Add Queue name as the routing key so that we can republish message for this queue only
+        $channel->queue_bind($queueName, $this->getExchange()->getName(), $queueName);
+
         $this->isDeclared = true;
         return $response;
     }
@@ -211,11 +214,18 @@ class Queue {
     }
 
     /**
-     * @param Array $routingKeys
+     * @param string[] $routingKeys
      */
     public function setRoutingKeys($routingKeys)
     {
         $this->routingKeys = $routingKeys;
+    }
+
+    /**
+     * @param string $routingKey
+     */
+    public function addRoutingKey($routingKey) {
+        $this->routingKeys[] = $routingKey;
     }
 
     /**
@@ -227,7 +237,7 @@ class Queue {
     }
 
     /**
-     * @return Array
+     * @return string[]
      */
     public function getRoutingKeys()
     {
