@@ -81,6 +81,7 @@ class RevinateRabbitMqExtension extends Extension
                 $exchange['nowait'],
                 $exchange['arguments'],
                 $exchange['ticket'],
+                $exchange['managed'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.exchange.%s', $key), $definition);
             $servicesDefinition->addMethodCall('addExchange', array(new Reference(sprintf('revinate_rabbit_mq.exchange.%s', $key))));
@@ -104,6 +105,7 @@ class RevinateRabbitMqExtension extends Extension
                 $queue['arguments'],
                 $queue['routing_keys'],
                 $queue['ticket'],
+                $exchange['managed'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
             $servicesDefinition->addMethodCall('addQueue', array(new Reference(sprintf('revinate_rabbit_mq.queue.%s', $key))));

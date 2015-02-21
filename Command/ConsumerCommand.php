@@ -9,10 +9,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class AMQPEventConsumerCommand
+ * Class ConsumerCommand
  * @package Revinate\RabbitMqBundle\Command
  */
-class AMQPEventConsumerCommand extends ContainerAwareCommand {
+class ConsumerCommand extends ContainerAwareCommand {
     const COMMAND_NAME = 'revinate:rabbitmq:consumer';
 
     /**
@@ -22,7 +22,7 @@ class AMQPEventConsumerCommand extends ContainerAwareCommand {
     {
         $this
             ->setName(self::COMMAND_NAME)
-            ->setDescription('inGuest AMQP Event Consumer Command')
+            ->setDescription('Default Consumer Command')
             ->addArgument('consumerName', InputArgument::REQUIRED, 'Consumer Name')
             ->addArgument('prefetchCount', InputArgument::OPTIONAL, 'Prefetch Count')
         ;
@@ -32,7 +32,6 @@ class AMQPEventConsumerCommand extends ContainerAwareCommand {
      * @see Symfony\Component\Console\Command\Command::initialize()
      */
     protected function initialize(InputInterface $input, OutputInterface $output) {
-        parent::initialize($input, $output);
     }
 
     /**

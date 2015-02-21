@@ -35,10 +35,12 @@ class Queue {
     protected $ticket = null;
     /** @var  boolean */
     protected $isDeclared = false;
+    /** @var bool  */
+    protected $managed = true;
 
     /**
      * @param $name
-     * @param $exchange
+     * @param \Revinate\RabbitMqBundle\Exchange\Exchange $exchange
      * @param $passive
      * @param $durable
      * @param $exlusive
@@ -47,9 +49,10 @@ class Queue {
      * @param $arguments
      * @param $routingKeys
      * @param $ticket
-     * @throws InvalidQueueConfigurationException
+     * @param $managed
+     * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidQueueConfigurationException
      */
-    public function __construct($name, Exchange $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket) {
+    public function __construct($name, Exchange $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket, $managed) {
         if (empty($name) || empty($exchange)) {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
@@ -64,7 +67,7 @@ class Queue {
         $this->arguments = $arguments;
         $this->routingKeys = $routingKeys;
         $this->ticket = $ticket;
-        $this->declareQueue();
+        $this->managed = $managed;
     }
 
     /**
@@ -72,7 +75,7 @@ class Queue {
      */
     public function declareQueue() {
         $channel = $this->connection->channel();
-        list($queueName, , ) = $channel->queue_declare(
+        $response = $channel->queue_declare(
             $this->getName(),
             $this->getPassive(),
             $this->getDurable(),
@@ -82,7 +85,7 @@ class Queue {
             $this->getArguments(),
             $this->getTicket()
         );
-
+        $queueName = $response[0];
          if (count($this->getRoutingKeys()) > 0) {
              foreach ($this->getRoutingKeys() as $routingKey) {
                  $channel->queue_bind($queueName, $this->getExchange()->getName(), $routingKey);
@@ -91,6 +94,7 @@ class Queue {
              $channel->queue_bind($queueName, $this->getExchange()->getName(), '');
          }
         $this->isDeclared = true;
+        return $response;
     }
 
 
@@ -252,5 +256,13 @@ class Queue {
     public function getExchange()
     {
         return $this->exchange;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getManaged()
+    {
+        return $this->managed;
     }
 }

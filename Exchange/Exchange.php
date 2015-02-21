@@ -10,50 +10,30 @@ use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
  */
 class Exchange {
 
-    /**
-     * @var AMQPConnection
-     */
+    /** @var AMQPConnection  */
     protected $connection;
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $name;
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $type;
-    /**
-     * @var boolean
-     */
+    /** @var bool */
     protected $passive = false;
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     protected $durable = true;
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     protected $autoDelete = false;
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     protected $internal = false;
-    /**
-     * @var boolean
-     */
+    /** @var bool  */
     protected $noWait = false;
-    /**
-     * @var Array
-     */
+    /** @var array */
     protected $arguments = null;
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $ticket = null;
-    /**
-     * @var
-     */
+    /** @var bool  */
     protected $isDeclared = false;
+    /** @var bool  */
+    protected $managed = true;
 
     /**
      * @param $name
@@ -66,9 +46,10 @@ class Exchange {
      * @param $noWait
      * @param $arguments
      * @param $ticket
-     * @throws InvalidExchangeConfigurationException
+     * @param $managed
+     * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
-    function __construct($name, $connection, $type, $passive, $durable, $autoDelete, $internal, $noWait, $arguments, $ticket) {
+    function __construct($name, $connection, $type, $passive, $durable, $autoDelete, $internal, $noWait, $arguments, $ticket, $managed) {
         if (empty($name) || empty($type)) {
             throw new InvalidExchangeConfigurationException("Please specify Exchange name and type to declare an exchange.");
         }
@@ -82,14 +63,14 @@ class Exchange {
         $this->noWait = $noWait;
         $this->arguments = $arguments;
         $this->ticket = $ticket;
-        $this->declareExchange();
+        $this->managed = $managed;
     }
 
     /**
      * Declare Exchange
      */
     public function declareExchange() {
-        $this->connection->channel()->exchange_declare(
+        $response = $this->connection->channel()->exchange_declare(
             $this->getName(),
             $this->getType(),
             $this->getPassive(),
@@ -101,6 +82,7 @@ class Exchange {
             $this->getTicket()
         );
         $this->isDeclared = true;
+        return $response;
     }
 
     /**
@@ -189,5 +171,13 @@ class Exchange {
     public function getIsDeclared()
     {
         return $this->isDeclared;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getManaged()
+    {
+        return $this->managed;
     }
 }
