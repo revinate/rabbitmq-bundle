@@ -67,7 +67,7 @@ class Producer {
      * @param Message $message
      */
     public function rePublishForSelf(Message $message) {
-        $newRoutingKey = $message->getConsumer()->getQueue()->getName();
+        $newRoutingKey = "queue." . $message->getConsumer()->getQueue()->getName();
         $message->incrementRetryCount();
         $this->basicPublish($message, $newRoutingKey);
     }
