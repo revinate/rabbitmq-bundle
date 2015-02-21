@@ -23,7 +23,6 @@ class SetupCommand extends ContainerAwareCommand {
         $this
             ->setName(self::COMMAND_NAME)
             ->setDescription('Command thats setups all queues, exchanges and their bindings')
-            ->addArgument('debug', InputArgument::OPTIONAL, 'is Debug Mode')
         ;
     }
 
@@ -39,28 +38,28 @@ class SetupCommand extends ContainerAwareCommand {
     protected function execute(InputInterface $input, OutputInterface $output) {
         $services = $this->getContainer()->get('revinate.rabbit_mq.services');
 
-        echo "\n\nDeclaring Exchanges";
+        echo "\n\nDeclaring Exchanges\n";
         foreach ($services->getExchanges() as $exchange) {
             $response = null;
-            echo "\n" . $exchange->getName();
             if (!$exchange->getManaged()) {
-                echo " Not managed, skipping.";
+                echo "Skipped : ";
             } else {
-                echo " Declared";
+                echo "Declared: ";
                 $exchange->declareExchange();
             }
+            echo "\n" . $exchange->getName();
         }
 
-        echo "\n\nDeclaring Queues";
+        echo "\n\nDeclaring Queues\n";
         foreach ($services->getQueues() as $queue) {
-            echo "\n" . $queue->getName();
             $response = null;
             if (!$queue->getManaged()) {
-                echo " Not managed, skipping.";
+                echo "Skipped : ";
             } else {
-                echo " Declared";
+                echo "Declared: ";
                 $queue->declareQueue();
             }
+            echo "\n" . $queue->getName();
         }
     }
 }
