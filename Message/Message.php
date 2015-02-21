@@ -33,6 +33,8 @@ class Message {
     protected $consumer;
     /** @var  AMQPMessage */
     protected $amqpMessage;
+    /** @var  string */
+    protected $originalRoutingKey;
 
     /** @var array message headers */
     protected $headers = array();
@@ -45,6 +47,7 @@ class Message {
     public function __construct($data, $routingKey, $headers = array()) {
         $this->data = $data;
         $this->addHeader('routingKey', $routingKey);
+        $this->setOriginalRoutingKey($routingKey);
         $this->setCreatedAt(new \DateTime('now'));
         if (!empty($headers)) {
             $this->setHeaders($headers);
@@ -308,6 +311,22 @@ class Message {
     public function getAmqpMessage()
     {
         return $this->amqpMessage;
+    }
+
+    /**
+     * @param string $originalRoutingKey
+     */
+    public function setOriginalRoutingKey($originalRoutingKey)
+    {
+        $this->originalRoutingKey = $originalRoutingKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOriginalRoutingKey()
+    {
+        return $this->originalRoutingKey;
     }
 
     /**
