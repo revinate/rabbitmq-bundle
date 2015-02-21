@@ -47,7 +47,7 @@ abstract class BaseMessageProcessor {
             $isException = false;
             if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
                 call_user_func($this->consumer->getSetContainerCallback(), $this->consumer->getContainer());
-                $messageParam = $this->consumer->isBatchConsumer() ? array($messages) : $firstMessage;
+                $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
                 // In case of BatchConsumer, $processFlag must be an array
                 $processFlag = call_user_func_array($this->consumer->getCallback(), array($messageParam));
                 foreach ($messages as $message) {
