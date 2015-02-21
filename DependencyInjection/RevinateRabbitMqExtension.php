@@ -105,7 +105,7 @@ class RevinateRabbitMqExtension extends Extension
                 $queue['arguments'],
                 $queue['routing_keys'],
                 $queue['ticket'],
-                $exchange['managed'],
+                $queue['managed'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
             $servicesDefinition->addMethodCall('addQueue', array(new Reference(sprintf('revinate_rabbit_mq.queue.%s', $key))));
