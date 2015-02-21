@@ -45,6 +45,7 @@ class Message {
     public function __construct($data, $routingKey, $headers = array()) {
         $this->data = $data;
         $this->addHeader('routingKey', $routingKey);
+        $this->setCreatedAt(new \DateTime('now'));
         if (!empty($headers)) {
             $this->setHeaders($headers);
         } else {
