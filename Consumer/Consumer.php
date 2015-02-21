@@ -45,6 +45,8 @@ class Consumer {
     protected $consumerTag;
     /** @var int  */
     protected $batchSize = 1;
+    /** @var  int If using batchSize, wait for these many ms before flushing buffer */
+    protected $bufferWait;
     /** @var FairnessAlgorithmInterface */
     protected $fairnessAlgorithm = null;
     /** @var string  */
@@ -392,6 +394,22 @@ class Consumer {
     public function getContainer()
     {
         return $this->container;
+    }
+
+    /**
+     * @param int $bufferWait
+     */
+    public function setBufferWait($bufferWait)
+    {
+        $this->bufferWait = $bufferWait;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBufferWait()
+    {
+        return $this->bufferWait;
     }
 
 }

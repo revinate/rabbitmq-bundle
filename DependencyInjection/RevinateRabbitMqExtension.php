@@ -139,6 +139,7 @@ class RevinateRabbitMqExtension extends Extension
             $definition->addMethodCall('setSetContainerCallback', array(array(new Reference($consumer['callback']), 'setContainer')));
             $definition->addMethodCall('setBatchSize', array($consumer['batch_size']));
             $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
+            $definition->addMethodCall('setBufferWait', array($consumer['buffer_wait']));
             if (isset($consumer['fairness_algorithm'])) {
                 $definition->addMethodCall('setFairnessAlgorithm', array(new Reference($consumer['fairness_algorithm'])));
             }

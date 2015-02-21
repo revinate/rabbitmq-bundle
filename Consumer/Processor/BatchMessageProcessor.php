@@ -16,9 +16,11 @@ use Revinate\RabbitMqBundle\Message\Message;
 class BatchMessageProcessor extends BaseMessageProcessor implements MessageProcessorInterface {
 
     /** @var AMQPMessage[] */
-    protected $messages;
+    protected $amqpMessages;
     /** @var  int */
     protected $batchSize;
+    /** @var int timestamp in millisec when last batch was processed  */
+    protected $processedBatchAt = 0;
 
     /**
      * @param AMQPMessage $amqpMessage
@@ -26,21 +28,22 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      * @return mixed|void
      */
     public function processMessage(AMQPMessage $amqpMessage) {
-        $this->messages[] = $amqpMessage;
-        if (count($this->messages) >= $this->batchSize) {
-            $this->processMessagesInBatch();
+        $this->amqpMessages[] = $amqpMessage;
+        if ($this->shouldProcessBatch()) {
+            $amqpMessageBatch = array_slice($this->amqpMessages, 0, $this->batchSize);
+            $this->amqpMessages = array_slice($this->amqpMessages, $this->batchSize);
+            $this->processMessagesInBatch($amqpMessageBatch);
+            $this->processedBatchAt = microtime(true) * 1000;
         }
     }
 
     /**
-     *
+     * @param AMQPMessage[] $amqpMessages
      */
-    protected function processMessagesInBatch() {
-        $messages = array_slice($this->messages, 0, $this->batchSize);
-        $this->messages = array_slice($this->messages, $this->batchSize);
-        $processFlagOrFlags = $this->callConsumerCallback($messages);
-        $this->ackOrNackMessage($messages, $processFlagOrFlags);
-        $this->consumer->incrementConsumed(count($messages));
+    protected function processMessagesInBatch($amqpMessages) {
+        $processFlagOrFlags = $this->callConsumerCallback($amqpMessages);
+        $this->ackOrNackMessage($amqpMessages, $processFlagOrFlags);
+        $this->consumer->incrementConsumed(count($amqpMessages));
     }
 
     /**
@@ -52,5 +55,20 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
             $processFlag = is_array($processFlagOrFlags) && isset($processFlagOrFlags[$index]) ? $processFlagOrFlags[$index] : $processFlagOrFlags;
             $this->consumer->ackOrNackMessage($amqpMessage, $processFlag);
         }
+    }
+    /**
+     * Returns true if
+     * - message count in buffer > batch size, or
+     * - wait window is elapsed to wait for buffer to get filled up
+     * @return bool if batch should be processed
+     */
+    protected function shouldProcessBatch() {
+        if (count($this->amqpMessages) >= $this->batchSize) {
+            return true;
+        }
+        if ($this->processedBatchAt - microtime(true) * 1000 > $this->consumer->getBufferWait()) {
+            return true;
+        }
+        return false;
     }
 }
