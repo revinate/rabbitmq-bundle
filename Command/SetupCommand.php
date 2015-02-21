@@ -37,38 +37,29 @@ class SetupCommand extends ContainerAwareCommand {
      * @see Symfony\Component\Console\Command\Command::execute()
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
-        $isDebug = $input->getArgument('debug');
         $services = $this->getContainer()->get('revinate.rabbit_mq.services');
 
+        echo "\n\nDeclaring Exchanges";
         foreach ($services->getExchanges() as $exchange) {
             $response = null;
-            echo "\nExchange: " . $exchange->getName() . " : ";
+            echo "\n" . $exchange->getName();
             if (!$exchange->getManaged()) {
-                echo "Not managed, skipping.";
-            } else if ($exchange->getIsDeclared()) {
-                echo "Declared Already.";
+                echo " Not managed, skipping.";
             } else {
-                echo "Declaring";
-                $response = $exchange->declareExchange();
-            }
-            if ($isDebug) {
-                var_dump($response);
+                echo " Declared";
+                $exchange->declareExchange();
             }
         }
 
+        echo "\n\nDeclaring Queues";
         foreach ($services->getQueues() as $queue) {
-            echo "\nQueue: " . $queue->getName() . " : ";
+            echo "\n" . $queue->getName();
             $response = null;
             if (!$queue->getManaged()) {
-                echo "Not managed, skipping.";
-            } else if ($queue->getIsDeclared()) {
-                echo "Declared Already.";
+                echo " Not managed, skipping.";
             } else {
-                echo "Declaring";
-                $response = !$queue->getIsDeclared() ? $queue->declareQueue() : array('status' => 'already declared');
-            }
-            if ($isDebug) {
-                var_dump($response);
+                echo " Declared";
+                $queue->declareQueue();
             }
         }
     }
