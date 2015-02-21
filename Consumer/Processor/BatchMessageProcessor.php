@@ -29,21 +29,22 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      */
     public function processMessage(AMQPMessage $amqpMessage) {
         $this->amqpMessages[] = $amqpMessage;
-        if ($this->shouldProcessBatch()) {
-            $amqpMessageBatch = array_slice($this->amqpMessages, 0, $this->batchSize);
-            $this->amqpMessages = array_slice($this->amqpMessages, $this->batchSize);
-            $this->processMessagesInBatch($amqpMessageBatch);
+        if (($batchSize = $this->getBatchSizeToProcess())) {
+            $amqpMessageBatch = array_slice($this->amqpMessages, 0, $batchSize);
+            $this->amqpMessages = array_slice($this->amqpMessages, $batchSize);
+            $this->processMessagesInBatch($amqpMessageBatch, $batchSize);
             $this->processedBatchAt = microtime(true) * 1000;
         }
     }
 
     /**
      * @param AMQPMessage[] $amqpMessages
+     * @param int $batchSize
      */
-    protected function processMessagesInBatch($amqpMessages) {
+    protected function processMessagesInBatch($amqpMessages, $batchSize) {
         $processFlagOrFlags = $this->callConsumerCallback($amqpMessages);
         $this->ackOrNackMessage($amqpMessages, $processFlagOrFlags);
-        $this->consumer->incrementConsumed(count($amqpMessages));
+        $this->consumer->incrementConsumed($batchSize);
     }
 
     /**
@@ -57,18 +58,17 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
         }
     }
     /**
-     * Returns true if
+     * Returns non zero if
      * - message count in buffer > batch size, or
      * - wait window is elapsed to wait for buffer to get filled up
-     * @return bool if batch should be processed
+     * @return int if batch should be processed, return > 0
      */
-    protected function shouldProcessBatch() {
+    protected function getBatchSizeToProcess() {
         if (count($this->amqpMessages) >= $this->batchSize) {
-            return true;
+            return $this->batchSize;
+        } else if ($this->processedBatchAt - microtime(true) * 1000 > $this->consumer->getBufferWait()) {
+            return count($this->amqpMessages);
         }
-        if ($this->processedBatchAt - microtime(true) * 1000 > $this->consumer->getBufferWait()) {
-            return true;
-        }
-        return false;
+        return 0;
     }
 }

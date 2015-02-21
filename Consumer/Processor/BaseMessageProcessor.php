@@ -23,7 +23,6 @@ abstract class BaseMessageProcessor {
      */
     public function __construct(Consumer $consumer) {
         $this->consumer = $consumer;
-        $this->batchSize = $this->consumer->getBatchSize();
     }
 
     /**
@@ -94,6 +93,6 @@ abstract class BaseMessageProcessor {
         if (count($processFlags) == $messagesCount) {
             return $processFlags;
         }
-        throw new InvalidCountOfResponseStatusesException("If implementing BatchConsumerInterface, please return array of status flags of size equal to your batch size.");
+        throw new InvalidCountOfResponseStatusesException("If implementing BatchConsumerInterface, please return array of status flags of size equal to number of messages you received.");
     }
 }
