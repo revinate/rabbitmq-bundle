@@ -29,7 +29,8 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      */
     public function processMessage(AMQPMessage $amqpMessage) {
         $this->amqpMessages[] = $amqpMessage;
-        if (($batchSize = $this->getBatchSizeToProcess())) {
+        $batchSize = $this->getBatchSizeToProcess();
+        if ($batchSize > 0) {
             $amqpMessageBatch = array_slice($this->amqpMessages, 0, $batchSize);
             $this->amqpMessages = array_slice($this->amqpMessages, $batchSize);
             $this->processMessagesInBatch($amqpMessageBatch, $batchSize);
@@ -66,7 +67,7 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
     protected function getBatchSizeToProcess() {
         if (count($this->amqpMessages) >= $this->batchSize) {
             return $this->batchSize;
-        } else if ($this->processedBatchAt - microtime(true) * 1000 > $this->consumer->getBufferWait()) {
+        } else if (microtime(true) * 1000 - $this->processedBatchAt > $this->consumer->getBufferWait()) {
             return count($this->amqpMessages);
         }
         return 0;
