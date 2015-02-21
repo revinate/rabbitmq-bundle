@@ -155,7 +155,7 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('queue')->isRequired()->end()
                             ->scalarNode('callback')->isRequired()->end()
-                            ->scalarNode('idle_timeout')->end()
+                            ->scalarNode('idle_timeout')->defaultValue(0)->end()
                             ->scalarNode('message_class')->defaultValue(null)->end()
                             ->scalarNode('batch_size')->defaultValue(1)->end()
                             ->scalarNode('fairness_algorithm')->defaultValue(null)->end()
