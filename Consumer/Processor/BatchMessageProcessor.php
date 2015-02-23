@@ -58,6 +58,7 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
             $this->consumer->ackOrNackMessage($amqpMessage, $processFlag);
         }
     }
+
     /**
      * Returns non zero if
      * - message count in buffer > batch size, or
@@ -65,8 +66,9 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      * @return int if batch should be processed, return > 0
      */
     protected function getBatchSizeToProcess() {
-        if (count($this->amqpMessages) >= $this->batchSize) {
-            return $this->batchSize;
+        $consumerBatchSize = $this->consumer->getBatchSize();
+        if (count($this->amqpMessages) >= $consumerBatchSize) {
+            return $consumerBatchSize;
         } else if (microtime(true) * 1000 - $this->processedBatchAt > $this->consumer->getBufferWait()) {
             return count($this->amqpMessages);
         }
