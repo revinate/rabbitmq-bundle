@@ -10,11 +10,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 interface BatchConsumerInterface
 {
     /**
-     * @param ContainerInterface $container
-     */
-    public function setContainer(ContainerInterface $container);
-
-    /**
      * @param \Revinate\RabbitMqBundle\Message\Message[] $messages
      * @return int
      */

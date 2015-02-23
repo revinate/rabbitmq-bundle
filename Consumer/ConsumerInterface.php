@@ -12,11 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 interface ConsumerInterface
 {
     /**
-     * @param ContainerInterface $container
-     */
-    public function setContainer(ContainerInterface $container);
-
-    /**
      * @param \Revinate\RabbitMqBundle\Message\Message $message
      * @return int
      */

@@ -45,7 +45,7 @@ abstract class BaseMessageProcessor {
         try {
             $isException = false;
             if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
-                call_user_func($this->consumer->getSetContainerCallback(), $this->consumer->getContainer());
+                $this->setContainer();
                 $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
                 // In case of BatchConsumer, $processFlag must be an array
                 $processFlag = call_user_func_array($this->consumer->getCallback(), array($messageParam));
@@ -94,5 +94,15 @@ abstract class BaseMessageProcessor {
             return $processFlags;
         }
         throw new InvalidCountOfResponseStatusesException("If implementing BatchConsumerInterface, please return array of status flags of size equal to number of messages you received.");
+    }
+
+    /**
+     * Set Container on the consumer
+     */
+    protected function setContainer() {
+        if (!is_callable($this->consumer->getSetContainerCallback())) {
+            return;
+        }
+        call_user_func($this->consumer->getSetContainerCallback(), $this->consumer->getContainer());
     }
 }
