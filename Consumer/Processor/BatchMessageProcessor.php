@@ -45,7 +45,6 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
     protected function processMessagesInBatch($amqpMessages, $batchSize) {
         $processFlagOrFlags = $this->callConsumerCallback($amqpMessages);
         $this->ackOrNackMessage($amqpMessages, $processFlagOrFlags);
-        $this->consumer->incrementConsumed($batchSize);
     }
 
     /**

@@ -30,6 +30,5 @@ class SingleMessageProcessor extends BaseMessageProcessor implements MessageProc
     public function processMessage(AMQPMessage $amqpMessage) {
         $processFlag = $this->callConsumerCallback(array($amqpMessage));
         $this->consumer->ackOrNackMessage($amqpMessage, $processFlag);
-        $this->consumer->incrementConsumed(1);
     }
 }

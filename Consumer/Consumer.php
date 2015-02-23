@@ -78,7 +78,7 @@ class Consumer {
      * @param int $messageCount
      */
     public function consume($messageCount) {
-        $this->target = $messageCount;
+        $this->setTarget($messageCount);
         $this->messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
         $this->setupConsumer();
         while (count($this->getChannel()->callbacks)) {
@@ -92,17 +92,6 @@ class Consumer {
      */
     public function purge() {
         $this->getChannel()->queue_purge($this->getQueue()->getName(), true);
-    }
-
-    /**
-     * @param int $messageCount
-     */
-    public function start($messageCount = 0) {
-        $this->setTarget($messageCount);
-        $this->setupConsumer();
-        while (count($this->getChannel()->callbacks)) {
-            $this->getChannel()->wait();
-        }
     }
 
     /**
@@ -124,7 +113,6 @@ class Consumer {
             }
             pcntl_signal_dispatch();
         }
-
         if ($this->getConsumed() == $this->getTarget() && $this->getTarget() > 0) {
             $this->stopConsuming();
         } else {
@@ -152,6 +140,8 @@ class Consumer {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);
         }
+        $this->incrementConsumed(1);
+        $this->maybeStopConsumer();
     }
 
     /**
