@@ -82,7 +82,7 @@ class Consumer {
         $this->messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
         $this->setupConsumer();
         while (count($this->getChannel()->callbacks)) {
-            $this->maybeStopConsumer();
+            $this->stopConsumerIfTargetReached();
             $this->getChannel()->wait(null, false, $this->getIdleTimeout());
         }
     }
@@ -106,7 +106,7 @@ class Consumer {
      * May be stop the consumer
      * @throws \BadFunctionCallException
      */
-    protected function maybeStopConsumer() {
+    public function stopConsumerIfTargetReached() {
         if (extension_loaded('pcntl') && (defined('AMQP_WITHOUT_SIGNALS') ? !AMQP_WITHOUT_SIGNALS : true)) {
             if (!function_exists('pcntl_signal_dispatch')) {
                 throw new \BadFunctionCallException("Function 'pcntl_signal_dispatch' is referenced in the php.ini 'disable_functions' and can't be called.");
@@ -141,7 +141,6 @@ class Consumer {
             $channel->basic_ack($deliveryTag);
         }
         $this->incrementConsumed(1);
-        $this->maybeStopConsumer();
     }
 
     /**

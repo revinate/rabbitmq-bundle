@@ -23,6 +23,15 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
     protected $processedBatchAt = 0;
 
     /**
+     * Destructor
+     */
+    public function __destruct() {
+        if (count($this->amqpMessages) > 0) {
+            $this->processMessagesInBatch($this->amqpMessages);
+        }
+    }
+
+    /**
      * @param AMQPMessage $amqpMessage
      * @internal param $callback
      * @return mixed|void
@@ -32,26 +41,18 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
         $batchSize = $this->getBatchSizeToProcess();
         if ($batchSize > 0) {
             $amqpMessageBatch = array_slice($this->amqpMessages, 0, $batchSize);
-            $this->amqpMessages = array_slice($this->amqpMessages, $batchSize);
-            $this->processMessagesInBatch($amqpMessageBatch, $batchSize);
+            $this->processMessagesInBatch($amqpMessageBatch);
             $this->processedBatchAt = microtime(true) * 1000;
+            $this->amqpMessages = array_slice($this->amqpMessages, $batchSize);
         }
+        $this->consumer->stopConsumerIfTargetReached();
     }
 
     /**
      * @param AMQPMessage[] $amqpMessages
-     * @param int $batchSize
      */
-    protected function processMessagesInBatch($amqpMessages, $batchSize) {
+    protected function processMessagesInBatch($amqpMessages) {
         $processFlagOrFlags = $this->callConsumerCallback($amqpMessages);
-        $this->ackOrNackMessage($amqpMessages, $processFlagOrFlags);
-    }
-
-    /**
-     * @param AMQPMessage[] $amqpMessages
-     * @param int|int[] $processFlagOrFlags
-     */
-    protected function ackOrNackMessage($amqpMessages, $processFlagOrFlags) {
         foreach ($amqpMessages as $index => $amqpMessage) {
             $processFlag = is_array($processFlagOrFlags) && isset($processFlagOrFlags[$index]) ? $processFlagOrFlags[$index] : $processFlagOrFlags;
             $this->consumer->ackOrNackMessage($amqpMessage, $processFlag);
