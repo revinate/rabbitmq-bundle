@@ -26,8 +26,9 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      * Destructor
      */
     public function __destruct() {
+        // If there are messages left in the queue, reject requeue them
         if (count($this->amqpMessages) > 0) {
-            $this->callConsumerCallback($this->amqpMessages);
+            $this->rejectRequeueMessages($this->amqpMessages);
         }
     }
 

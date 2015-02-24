@@ -146,8 +146,9 @@ class RevinateRabbitMqExtension extends Extension
             }
             // Make prefetch-count to match batch-size if specified
             if (isset($consumer['batch_size'])) {
-                $consumer['qos_options'] = isset($consumer['qos_options']) ? $consumer['qos_options'] : array();
-                $consumer['qos_options']['prefetch_count'] = $consumer['batch_size'];
+                $consumer['qos_options'] = isset($consumer['qos_options']) ? $consumer['qos_options'] :
+                    array('prefetch_size' => 0, 'prefetch_count' => 0, 'global' => false);
+                $consumer['qos_options'] = array_replace($consumer['qos_options'], array('prefetch_count' => $consumer['batch_size']));
             }
             if (array_key_exists('qos_options', $consumer)) {
                 $definition->addMethodCall('setQosOptions', array(

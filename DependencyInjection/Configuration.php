@@ -157,7 +157,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('callback')->isRequired()->end()
                             ->scalarNode('idle_timeout')->defaultValue(0)->end()
                             ->scalarNode('message_class')->defaultValue(null)->end()
-                            ->scalarNode('batch_size')->defaultValue(1)->end()
+                            ->scalarNode('batch_size')->defaultValue(null)->end()
                             ->scalarNode('fairness_algorithm')->defaultValue(null)->end()
                             ->scalarNode('buffer_wait')->defaultValue(1000)->end()
                             ->arrayNode('qos_options')

@@ -46,7 +46,7 @@ class Consumer {
     /** @var  string */
     protected $consumerTag;
     /** @var int  */
-    protected $batchSize = 1;
+    protected $batchSize = null;
     /** @var  int If using batchSize, wait for these many ms before flushing buffer */
     protected $bufferWait;
     /** @var FairnessAlgorithmInterface */
@@ -222,7 +222,7 @@ class Consumer {
      * @return bool
      */
     public function isBatchConsumer() {
-        return $this->getBatchSize() > 1;
+        return !is_null($this->getBatchSize());
     }
 
     /**

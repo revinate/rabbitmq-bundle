@@ -83,6 +83,17 @@ abstract class BaseMessageProcessor {
     }
 
     /**
+     * Reject requeue messages
+     * @param $messages
+     */
+    public function rejectRequeueMessages($messages) {
+        foreach ($messages as $message) {
+            $this->consumer->ackOrNackMessage($message, DeliveryResponse::MSG_REJECT_REQUEUE);
+        }
+    }
+
+
+    /**
      * @param int|int[] $processFlag
      * @param int $messagesCount
      * @param bool $isException
