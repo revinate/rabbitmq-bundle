@@ -84,10 +84,11 @@ abstract class BaseMessageProcessor {
 
     /**
      * Reject requeue messages
-     * @param $messages
+     * @param AMQPMessage[] $amqpMessages
      */
-    public function rejectRequeueMessages($messages) {
-        foreach ($messages as $message) {
+    public function rejectRequeueMessages($amqpMessages) {
+        foreach ($amqpMessages as $amqpMessage) {
+            $message = $this->consumer->getMessageFromAMQPMessage($amqpMessage);
             $this->consumer->ackOrNackMessage($message, DeliveryResponse::MSG_REJECT_REQUEUE);
         }
     }
