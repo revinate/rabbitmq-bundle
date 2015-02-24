@@ -55,7 +55,8 @@ class Producer {
     /**
      * @param Message $message
      */
-    public function rePublishForSelf(Message $message) {
+    public function rePublish(Message $message) {
+        // Change the routing key so that only current consumer gets this message, not other consumers of original routing key.
         $newRoutingKey = "queue." . $message->getConsumer()->getQueue()->getName();
         $message->incrementRetryCount();
         $this->basicPublish($message, $newRoutingKey);
@@ -64,8 +65,9 @@ class Producer {
     /**
      * @param Message $message
      * @param null $newRoutingKey New Event Name under which to publish this message
+     * @deprecated You should not be publishing for all consumers. Use republish() instead
      */
-    public function rePublishForAll(Message $message, $newRoutingKey = null) {
+    protected  function rePublishForAll(Message $message, $newRoutingKey = null) {
         $newRoutingKey = $newRoutingKey ? $newRoutingKey : $message->getRoutingKey();
         $message->incrementRetryCount();
         $this->basicPublish($message, $newRoutingKey);
@@ -88,7 +90,7 @@ class Producer {
     /**
      * @param Message $message
      * @param $routingKey
-     * @internal param $message
+     * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     protected function basicPublish(Message $message, $routingKey) {
         $encodedMessage = json_encode($message->getData());

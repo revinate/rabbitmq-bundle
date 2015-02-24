@@ -145,7 +145,7 @@ class Consumer {
             /** @var Exchange $exchange */
             $exchange = $this->container->get('revinate.rabbit_mq.exchange' . $message->getExchangeName());
             $baseProducer->setExchange($exchange);
-            $baseProducer->rePublishForSelf($message);
+            $baseProducer->rePublish($message);
         } else {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);
