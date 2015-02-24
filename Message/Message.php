@@ -341,28 +341,14 @@ class Message {
     }
 
     /**
-     * @param \Revinate\RabbitMqBundle\Exchange\Exchange $exchange
-     */
-    public function setExchange($exchange)
-    {
-        $this->exchange = $exchange;
-    }
-
-    /**
-     * @return \Revinate\RabbitMqBundle\Exchange\Exchange
-     */
-    public function getExchange()
-    {
-        return $this->exchange;
-    }
-
-    /**
      * @return string
      */
     public function __toString() {
         return json_encode(array(
             'id' => $this->getId(),
             'routingKey' => $this->getRoutingKey(),
+            'originalRoutingKey' => $this->getOriginalRoutingKey(),
+            'exchangeName' => $this->getExchangeName(),
             'fairnessKey' => $this->getFairnessKey(),
             'data' => $this->getData(),
             'createdAt' => $this->getCreatedAt(),
@@ -370,7 +356,7 @@ class Message {
             'processedAt' => $this->getProcessedAt(),
             'processTime' => $this->getProcessTime(),
             'dequeueDelay' => $this->getDequeueDelay(),
-            'numberOfEnqueueAttempts' => $this->getNumberOfEnqueueAttempts()
+            'retryCount' => $this->getRetryCount(),
         ));
     }
 }
