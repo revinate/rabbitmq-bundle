@@ -334,7 +334,7 @@ class Message {
     }
 
     /**
-     * @return null|Exchange
+     * @return null|string
      */
     public function getExchangeName() {
         return $this->amqpMessage ? $this->amqpMessage->delivery_info['exchange'] : null;

@@ -12,9 +12,9 @@ use Revinate\RabbitMqBundle\Consumer\Consumer;
 interface MessageProcessorInterface {
 
     /**
-     * @param Consumer $baseConsumer
+     * @param Consumer $consumer
      */
-    public function __construct(Consumer $baseConsumer);
+    public function __construct(Consumer $consumer);
     /**
      * @param AMQPMessage $amqpMessage
      */

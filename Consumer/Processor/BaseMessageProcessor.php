@@ -6,7 +6,9 @@ use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Exceptions\InvalidCountOfResponseStatusesException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
+use Revinate\RabbitMqBundle\Exceptions\RejectRepublishException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
+use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
 
 /**
@@ -45,7 +47,7 @@ abstract class BaseMessageProcessor {
         try {
             $isException = false;
             if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
-                $this->setContainer();
+                $this->setCallbackContainer();
                 $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
                 // In case of BatchConsumer, $processFlag must be an array
                 $processFlag = call_user_func_array($this->consumer->getCallback(), array($messageParam));
@@ -56,19 +58,28 @@ abstract class BaseMessageProcessor {
                 error_log("Event Requeued due to unfairness. Key: " . $firstMessage->getFairnessKey());
                 $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
             }
+        } catch (RejectRepublishException $e) {
+            // error_log("Republishing message");
+            $processFlag = DeliveryResponse::MSG_REJECT_REPUBLISH;
+            $isException = true;
         } catch (RejectRequeueException $e) {
-            error_log("Event Requeued due to processing error: " . $e->getMessage());
+            // error_log("Event Requeued due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
             $isException = true;
         } catch (RejectDropException $e) {
-            error_log("Event Dropped due to processing error: " . $e->getMessage());
+            // error_log("Event Dropped due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT;
             $isException = true;
         }
         if ($isFairPublishMessage) {
             $fairnessAlgorithm->onMessageProcessed($firstMessage);
         }
-        return $this->returnSingleOrMultipleProcessFlags($processFlag, count($messages), $isException);
+        $processFlagOrFlags = $this->getSingleOrMultipleProcessFlags($processFlag, count($messages), $isException);
+        // Ack or Nack Messages
+        foreach ($messages as $index => $message) {
+            $processFlag = is_array($processFlagOrFlags) && isset($processFlagOrFlags[$index]) ? $processFlagOrFlags[$index] : $processFlagOrFlags;
+            $this->consumer->ackOrNackMessage($message, $processFlag);
+        }
     }
 
     /**
@@ -78,7 +89,7 @@ abstract class BaseMessageProcessor {
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidCountOfResponseStatusesException
      * @return int|int[]
      */
-    protected function returnSingleOrMultipleProcessFlags($processFlag, $messagesCount, $isException) {
+    protected function getSingleOrMultipleProcessFlags($processFlag, $messagesCount, $isException) {
         $isArray = is_array($processFlag);
         $processFlags = $isArray ? $processFlag : array($processFlag);
         if (!$this->consumer->isBatchConsumer()) {
@@ -99,7 +110,7 @@ abstract class BaseMessageProcessor {
     /**
      * Set Container on the consumer
      */
-    protected function setContainer() {
+    protected function setCallbackContainer() {
         if (!is_callable($this->consumer->getSetContainerCallback())) {
             return;
         }

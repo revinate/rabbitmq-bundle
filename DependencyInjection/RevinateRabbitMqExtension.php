@@ -144,6 +144,11 @@ class RevinateRabbitMqExtension extends Extension
             if (isset($consumer['fairness_algorithm'])) {
                 $definition->addMethodCall('setFairnessAlgorithm', array(new Reference($consumer['fairness_algorithm'])));
             }
+            // Make prefetch-count to match batch-size if specified
+            if (isset($consumer['batch_size'])) {
+                $consumer['qos_options'] = isset($consumer['qos_options']) ? $consumer['qos_options'] : array();
+                $consumer['qos_options']['prefetch_count'] = $consumer['batch_size'];
+            }
             if (array_key_exists('qos_options', $consumer)) {
                 $definition->addMethodCall('setQosOptions', array(
                     $consumer['qos_options']['prefetch_size'],

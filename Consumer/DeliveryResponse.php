@@ -24,4 +24,9 @@ class DeliveryResponse {
      * Flag for reject and drop
      */
     const MSG_REJECT = -1;
+
+    /**
+     * Rejects and Republishes to the exchange
+     */
+    const MSG_REJECT_REPUBLISH = 3;
 }

@@ -20,8 +20,7 @@ class SingleMessageProcessor extends BaseMessageProcessor implements MessageProc
      * @return mixed|void
      */
     public function processMessage(AMQPMessage $amqpMessage) {
-        $processFlag = $this->callConsumerCallback(array($amqpMessage));
-        $this->consumer->ackOrNackMessage($amqpMessage, $processFlag);
+        $this->callConsumerCallback(array($amqpMessage));
         $this->consumer->stopConsumerIfTargetReached();
     }
 }

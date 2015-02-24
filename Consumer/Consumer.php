@@ -9,6 +9,8 @@ use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
 use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
 use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
 use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
+use Revinate\RabbitMqBundle\Exchange\Exchange;
+use Revinate\RabbitMqBundle\Producer\BaseProducer;
 use Revinate\RabbitMqBundle\Queue\Queue;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface;
@@ -115,27 +117,35 @@ class Consumer {
         }
         if ($this->getConsumed() == $this->getTarget() && $this->getTarget() > 0) {
             $this->stopConsuming();
-        } else {
-            return;
         }
     }
 
     /**
-     * @param AMQPMessage $amqpMessage
+     *
+     * @param \Revinate\RabbitMqBundle\Message\Message $message
      * @param $processFlag
      */
-    public function ackOrNackMessage(AMQPMessage $amqpMessage, $processFlag) {
+    public function ackOrNackMessage(Message $message, $processFlag) {
+        $amqpMessage = $message->getAmqpMessage();
         $channel = $amqpMessage->delivery_info['channel'];
         $deliveryTag = $amqpMessage->delivery_info['delivery_tag'];
+
         if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
         } else if ($processFlag === DeliveryResponse::MSG_SINGLE_NACK_REQUEUE) {
-            // NACK and requeue message to RabbitMQ
+            // NACK and requeue message to RabbitMQ (basic_nack is rabbitmq only, not an AMQP standard)
             $channel->basic_nack($deliveryTag, false, true);
         } else if ($processFlag === DeliveryResponse::MSG_REJECT) {
             // Reject and drop
             $channel->basic_reject($deliveryTag, false);
+        } else if ($processFlag === DeliveryResponse::MSG_REJECT_REPUBLISH) {
+            /** @var BaseProducer $baseProducer */
+            $baseProducer = $this->container->get('revinate.rabbit_mq.base_producer');
+            /** @var Exchange $exchange */
+            $exchange = $this->container->get('revinate.rabbit_mq.exchange' . $message->getExchangeName());
+            $baseProducer->setExchange($exchange);
+            $baseProducer->rePublishForSelf($message);
         } else {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);
