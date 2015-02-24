@@ -73,7 +73,7 @@ class Configuration implements ConfigurationInterface
                     ->prototype('array')
                         ->children()
                             ->scalarNode('connection')->isRequired()->end()
-                            ->scalarNode('type')->isRequired()->end()
+                            ->scalarNode('type')->defaultValue('topic')->end()
                             ->booleanNode('passive')->defaultFalse()->end()
                             ->booleanNode('durable')->defaultTrue()->end()
                             ->booleanNode('auto_delete')->defaultFalse()->end()

@@ -3,6 +3,7 @@ namespace Revinate\RabbitMqBundle\Producer;
 
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
 
@@ -13,8 +14,6 @@ use Revinate\RabbitMqBundle\Message\Message;
 class Producer {
     /** @var  string */
     protected $name;
-    /** @var  AMQPConnection */
-    protected $connection;
     /** @var  Exchange */
     protected $exchange;
     /** @var array */
@@ -24,17 +23,9 @@ class Producer {
      * @param $name
      * @param Exchange $exchange
      */
-    public function __construct($name, Exchange $exchange) {
+    public function __construct($name = null, Exchange $exchange = null) {
         $this->name = $name;
         $this->exchange = $exchange;
-        $this->connection = $exchange->getConnection();
-    }
-
-    /**
-     * @return \PhpAmqpLib\Connection\AMQPConnection
-     */
-    public function getConnection() {
-        return $this->connection;
     }
 
     /**
@@ -53,13 +44,11 @@ class Producer {
     }
 
     /**
-     * @param array $data
+     * @param array|Message $data
      * @param string $routingKey
      */
     public function publish($data, $routingKey) {
-        if (! $data instanceof Message) {
-            $message = new Message($data, $routingKey);
-        }
+        $message = $data instanceof Message ? $data : new Message($data, $routingKey);
         $this->basicPublish($message, $routingKey);
     }
 
@@ -110,7 +99,11 @@ class Producer {
             Message::EXPIRATION_PROPERTY => $message->getExpiration()
         );
         $msg = new AMQPMessage($encodedMessage, $properties);
-        $channel = $this->getConnection()->channel();
+        if (empty($this->exchange)) {
+            throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to speficify exchange for this producer.");
+        }
+        $channel = $this->getExchange()->getConnection()->channel();
         $channel->basic_publish($msg, $this->getExchange()->getName(), $routingKey);
     }
+
 }
