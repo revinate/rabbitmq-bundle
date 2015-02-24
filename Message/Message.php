@@ -4,6 +4,7 @@ namespace Revinate\RabbitMqBundle\Message;
 
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\Consumer\Consumer;
+use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Lib\DateHelper;
 use Revinate\RabbitMqBundle\Lib\TextHelper;
 
@@ -46,7 +47,7 @@ class Message {
      */
     public function __construct($data, $routingKey, $headers = array()) {
         $this->data = $data;
-        $this->addHeader('routingKey', $routingKey);
+        $this->setRoutingKey($routingKey);
         $this->setOriginalRoutingKey($routingKey);
         $this->setCreatedAt(new \DateTime('now'));
         if (!empty($headers)) {
@@ -99,6 +100,13 @@ class Message {
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * @param string $routingKey
+     */
+    public function setRoutingKey($routingKey) {
+        $this->addHeader('routingKey', $routingKey);
     }
 
     /**
@@ -264,24 +272,6 @@ class Message {
     }
 
     /**
-     * @param $numberOfEnqueueAttempts
-     */
-    public function setNumberOfEnqueueAttempts($numberOfEnqueueAttempts) {
-        $this->addHeader('numberOfEnqueueAttempts', $numberOfEnqueueAttempts);
-    }
-
-    /**
-     * @return string
-     */
-    public function getNumberOfEnqueueAttempts() {
-        if (is_null($this->getHeader('numberOfEnqueueAttempts'))) {
-            // by default if should be 1
-            return 1;
-        }
-        return $this->getHeader('numberOfEnqueueAttempts');
-    }
-
-    /**
      * @param \Revinate\RabbitMqBundle\Consumer\Consumer $consumer
      */
     public function setConsumer($consumer)
@@ -318,7 +308,7 @@ class Message {
      */
     public function setOriginalRoutingKey($originalRoutingKey)
     {
-        $this->originalRoutingKey = $originalRoutingKey;
+        $this->addHeader('originalRoutingKey', $originalRoutingKey);
     }
 
     /**
@@ -326,7 +316,44 @@ class Message {
      */
     public function getOriginalRoutingKey()
     {
-        return $this->originalRoutingKey;
+        return $this->getHeader('originalRoutingKey');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDeliveryTag() {
+        return $this->amqpMessage ? $this->amqpMessage->delivery_info['delivery_tag'] : null;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function isRedelivered() {
+        return $this->amqpMessage ? $this->amqpMessage->delivery_info['redelivered'] : null;
+    }
+
+    /**
+     * @return null|Exchange
+     */
+    public function getExchangeName() {
+        return $this->amqpMessage ? $this->amqpMessage->delivery_info['exchange'] : null;
+    }
+
+    /**
+     * @param \Revinate\RabbitMqBundle\Exchange\Exchange $exchange
+     */
+    public function setExchange($exchange)
+    {
+        $this->exchange = $exchange;
+    }
+
+    /**
+     * @return \Revinate\RabbitMqBundle\Exchange\Exchange
+     */
+    public function getExchange()
+    {
+        return $this->exchange;
     }
 
     /**

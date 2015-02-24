@@ -7,6 +7,7 @@ use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class SingleMessageProcessor
@@ -14,15 +15,6 @@ use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
  */
 class SingleMessageProcessor extends BaseMessageProcessor implements MessageProcessorInterface {
 
-    /** @var Consumer  */
-    protected $consumer;
-
-    /**
-     * @param Consumer $consumer
-     */
-    public function __construct(Consumer $consumer) {
-        $this->consumer = $consumer;
-    }
     /**
      * @param AMQPMessage $amqpMessage
      * @return mixed|void
