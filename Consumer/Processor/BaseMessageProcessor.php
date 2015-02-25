@@ -55,7 +55,7 @@ abstract class BaseMessageProcessor {
                 }
             } else {
                 error_log("Event Requeued due to unfairness. Key: " . $firstMessage->getFairnessKey());
-                $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
+                $processFlag = DeliveryResponse::MSG_REJECT_REPUBLISH;
             }
         } catch (RejectRepublishException $e) {
             // error_log("Republishing message");
