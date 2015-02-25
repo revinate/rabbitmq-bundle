@@ -30,7 +30,6 @@ class RevinateRabbitMqExtension extends Extension
         $this->container = $container;
         $configuration = new Configuration();
         $this->config = $this->processConfiguration($configuration, $configs);
-        error_log(print_r($this->config, true));
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
