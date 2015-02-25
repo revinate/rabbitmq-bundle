@@ -115,7 +115,7 @@ class Consumer {
             }
             pcntl_signal_dispatch();
         }
-        if ($this->getConsumed() == $this->getTarget() && $this->getTarget() > 0) {
+        if ($this->getTarget() > 0 && $this->getConsumed() >= $this->getTarget()) {
             $this->stopConsuming();
         }
     }
