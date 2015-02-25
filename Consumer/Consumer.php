@@ -381,10 +381,12 @@ class Consumer {
         $headers = $properties['application_headers'];
         if ($this->getMessageClass()) {
             $messageClass = $this->getMessageClass();
-            return new $messageClass(json_decode($amqpMessage->body, true), $routingKey, $headers);
+            $message = new $messageClass(json_decode($amqpMessage->body, true), $routingKey, $headers);
         } else {
-            return new Message(json_decode($amqpMessage->body, true), $routingKey, $headers);
+            $message = new Message(json_decode($amqpMessage->body, true), $routingKey, $headers);
         }
+        $message->setAmqpMessage($amqpMessage);
+        return $message;
     }
 
     /**
