@@ -25,5 +25,6 @@
         "psr-0": {
             "Revinate\\RabbitMqBundle\\": ""
         }
-    }
+    },
+    "target-dir" : "Revinate/RabbitMqBundle"
 }
