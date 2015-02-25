@@ -26,10 +26,11 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      * Destructor
      */
     public function __destruct() {
+        // @TODO: Do we even need to manually nack? since no ack is nack by default
         // If there are messages left in the queue, reject requeue them
-        if (count($this->amqpMessages) > 0) {
-            $this->rejectRequeueMessages($this->amqpMessages);
-        }
+//        if (count($this->amqpMessages) > 0) {
+//            $this->rejectRequeueMessages($this->amqpMessages);
+//        }
     }
 
     /**
