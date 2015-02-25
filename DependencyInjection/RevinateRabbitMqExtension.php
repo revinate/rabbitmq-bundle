@@ -120,6 +120,7 @@ class RevinateRabbitMqExtension extends Extension
                 $key,
                 $this->getExchange($producer['exchange']),
             ));
+            $definition->addMethodCall('setEncoder', array(new Reference($producer['encoder'])));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
         }
     }
@@ -140,6 +141,7 @@ class RevinateRabbitMqExtension extends Extension
             $definition->addMethodCall('setBatchSize', array($consumer['batch_size']));
             $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
             $definition->addMethodCall('setBufferWait', array($consumer['buffer_wait']));
+            $definition->addMethodCall('setDecoder', array(new Reference($consumer['decoder'])));
             if (isset($consumer['fairness_algorithm'])) {
                 $definition->addMethodCall('setFairnessAlgorithm', array(new Reference($consumer['fairness_algorithm'])));
             }

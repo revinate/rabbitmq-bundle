@@ -9,7 +9,18 @@ parameters:
 services:
     revinate.rabbit_mq.base_producer:
         class: Revinate\RabbitMqBundle\Producer\BaseProducer
+
     revinate.rabbit_mq.services:
         class: Revinate\RabbitMqBundle\Config\Services
+
     revinate.rabbit_mq.fairness_algorithm.not_consecutive:
         class: Revinate\RabbitMqBundle\FairnessAlgorithms\NotConsecutiveFairnessAlgorithm
+
+    revinate.rabbit_mq.encoder.json:
+        class: Revinate\RabbitMqBundle\Encoder\JsonEncoder
+    revinate.rabbit_mq.encoder.serialize:
+        class: Revinate\RabbitMqBundle\Encoder\SerializeEncoder
+    revinate.rabbit_mq.decoder.json:
+        class: Revinate\RabbitMqBundle\Decoder\JsonDecoder
+    revinate.rabbit_mq.decoder.serialize:
+        class: Revinate\RabbitMqBundle\Decoder\SerializeDecoder

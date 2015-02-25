@@ -8,6 +8,7 @@ use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
 use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
 use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
+use Revinate\RabbitMqBundle\Decoder\DecoderInterface;
 use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Producer\BaseProducer;
@@ -53,6 +54,8 @@ class Consumer {
     protected $fairnessAlgorithm = null;
     /** @var string  */
     protected $messageClass = null;
+    /** @var  DecoderInterface */
+    protected $decoder;
 
     /**
      * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -379,11 +382,12 @@ class Consumer {
         $routingKey = $amqpMessage->delivery_info['routing_key'];
         $properties = $amqpMessage->get_properties();
         $headers = $properties['application_headers'];
+        $decodedData = $this->decoder->decode($amqpMessage->body);
         if ($this->getMessageClass()) {
             $messageClass = $this->getMessageClass();
-            $message = new $messageClass(json_decode($amqpMessage->body, true), $routingKey, $headers);
+            $message = new $messageClass($decodedData, $routingKey, $headers);
         } else {
-            $message = new Message(json_decode($amqpMessage->body, true), $routingKey, $headers);
+            $message = new Message($decodedData, $routingKey, $headers);
         }
         $message->setAmqpMessage($amqpMessage);
         return $message;
@@ -413,4 +417,19 @@ class Consumer {
         return $this->bufferWait;
     }
 
+    /**
+     * @param \Revinate\RabbitMqBundle\Decoder\DecoderInterface $decoder
+     */
+    public function setDecoder($decoder)
+    {
+        $this->decoder = $decoder;
+    }
+
+    /**
+     * @return \Revinate\RabbitMqBundle\Decoder\DecoderInterface
+     */
+    public function getDecoder()
+    {
+        return $this->decoder;
+    }
 }

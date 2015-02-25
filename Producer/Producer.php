@@ -3,6 +3,8 @@ namespace Revinate\RabbitMqBundle\Producer;
 
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Revinate\RabbitMqBundle\Encoder\DecoderInterface;
+use Revinate\RabbitMqBundle\Encoder\EncoderInterface;
 use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
@@ -16,8 +18,8 @@ class Producer {
     protected $name;
     /** @var  Exchange */
     protected $exchange;
-    /** @var array */
-    protected $applicationHeaders = array();
+    /** @var EncoderInterface */
+    protected $encoder;
 
     /**
      * @param $name
@@ -41,6 +43,22 @@ class Producer {
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return \Revinate\RabbitMqBundle\Encoder\EncoderInterface
+     */
+    public function getEncoder()
+    {
+        return $this->encoder;
+    }
+
+    /**
+     * @param \Revinate\RabbitMqBundle\Encoder\EncoderInterface $encoder
+     */
+    public function setEncoder($encoder)
+    {
+        $this->encoder = $encoder;
     }
 
     /**
@@ -93,7 +111,7 @@ class Producer {
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     protected function basicPublish(Message $message, $routingKey) {
-        $encodedMessage = json_encode($message->getData());
+        $encodedMessage = $this->encoder->encode($message->getData());
         $properties = array(
             Message::CONTENT_TYPE_PROPERTY => $message->getContentType(),
             Message::DELIVERY_MODE_PROPERTY => $message->getDeliveryMode(),
