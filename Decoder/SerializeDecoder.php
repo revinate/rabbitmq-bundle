@@ -14,6 +14,6 @@ class SerializeDecoder implements DecoderInterface {
      */
     public function decode($value)
     {
-        return unserialize($value, true);
+        return unserialize($value);
     }
 }
