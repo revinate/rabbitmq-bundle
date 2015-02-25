@@ -23,8 +23,7 @@
     },
     "autoload": {
         "psr-0": {
-            "revinate\\rabbitmq-bundle\\": ""
+            "Revinate\\RabbitMqBundle\\": ""
         }
-    },
-    "target-dir" : "revinate/rabbitmq-bundle"
+    }
 }
