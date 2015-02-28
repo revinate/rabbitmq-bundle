@@ -1,0 +1,7 @@
+- Logging
+- Decouple Fairness code a bit
+
+
+
+Symfony 1.2 Support
+- Config loader which instantiates all exchanges, consumers and producers.

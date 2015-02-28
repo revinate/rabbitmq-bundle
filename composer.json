@@ -1,6 +1,6 @@
 {
     "name": "revinate/rabbitmq-bundle",
-    "description": "Revinate RabbitMQ bundle which works with Symfony 2 and OldSound/RabbitMqBundle",
+    "description": "Revinate RabbitMQ bundle which works with Symfony 2",
     "keywords": ["symfony2", "rabbitmq", "message", "queue"],
     "type": "symfony-bundle",
     "license": "MIT",

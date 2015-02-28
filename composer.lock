@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "659bced6299461dc73805def67d8569f",
+    "hash": "1e1b3732123e722f5734c9c37411482e",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -1097,59 +1097,6 @@
         }
     ],
     "packages-dev": [
-        {
-            "name": "oldsound/rabbitmq-bundle",
-            "version": "v1.5.0",
-            "target-dir": "OldSound/RabbitMqBundle",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/videlalvaro/RabbitMqBundle.git",
-                "reference": "0c84f33f0233c29526cfca41bf6434119f917996"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/videlalvaro/RabbitMqBundle/zipball/0c84f33f0233c29526cfca41bf6434119f917996",
-                "reference": "0c84f33f0233c29526cfca41bf6434119f917996",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0",
-                "symfony/framework-bundle": "~2.1",
-                "symfony/yaml": "~2.0",
-                "videlalvaro/php-amqplib": "~2.4.0"
-            },
-            "require-dev": {
-                "symfony/console": "~2.0"
-            },
-            "type": "symfony-bundle",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.2.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "OldSound\\RabbitMqBundle\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Alvaro Videla"
-                }
-            ],
-            "description": "Integrates php-amqplib with Symfony2 and RabbitMq",
-            "keywords": [
-                "Symfony2",
-                "message",
-                "queue",
-                "rabbitmq"
-            ],
-            "time": "2014-06-21 12:15:53"
-        },
         {
             "name": "symfony/console",
             "version": "v2.6.4",
