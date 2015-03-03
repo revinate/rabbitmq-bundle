@@ -17,20 +17,17 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
 
     /** @var AMQPMessage[] */
     protected $amqpMessages;
-    /** @var  int */
-    protected $batchSize;
+    /** @var  int Batch Size: Starts from 1 and increments to $consumer->batchSize in steps */
+    protected $batchSize = 1;
     /** @var int timestamp in millisec when last batch was processed  */
-    protected $processedBatchAt = 0;
+    protected $processedBatchAt;
 
     /**
-     * Destructor
+     * @param Consumer $consumer
      */
-    public function __destruct() {
-        // @TODO: Do we even need to manually nack? since no ack is nack by default
-        // If there are messages left in the queue, reject requeue them
-//        if (count($this->amqpMessages) > 0) {
-//            $this->rejectRequeueMessages($this->amqpMessages);
-//        }
+    public function __construct(Consumer $consumer) {
+        $this->processedBatchAt = microtime(true) * 1000;
+        parent::__construct($consumer);
     }
 
     /**
@@ -46,6 +43,7 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
             $this->callConsumerCallback($amqpMessageBatch);
             $this->processedBatchAt = microtime(true) * 1000;
             $this->amqpMessages = array_slice($this->amqpMessages, $batchSize);
+            $this->updateDynamicBatchSize();
         }
         $this->consumer->stopConsumerIfTargetReached();
     }
@@ -57,12 +55,23 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      * @return int if batch should be processed, return > 0
      */
     protected function getBatchSizeToProcess() {
-        $consumerBatchSize = $this->consumer->getBatchSize();
-        if (count($this->amqpMessages) >= $consumerBatchSize) {
-            return $consumerBatchSize;
+        $return = 0;
+        if (count($this->amqpMessages) >= $this->batchSize) {
+            $return = $this->batchSize;
         } else if (microtime(true) * 1000 - $this->processedBatchAt > $this->consumer->getBufferWait()) {
-            return count($this->amqpMessages);
+            $return = count($this->amqpMessages);
         }
-        return 0;
+        return $return;
+    }
+
+    /**
+     * Update dynamic batch size.
+     * The batch size starts from One and increments to $this->consumer->getBatchSize() in steps.
+     * This is to ensure that when queue size is less than batchSize, we still process messages
+     * @TODO: Think of a better way to handle this case
+     */
+    protected function updateDynamicBatchSize() {
+        $maxBatchSize = $this->consumer->getBatchSize();
+        $this->batchSize = $this->batchSize * 2 > $maxBatchSize ? $maxBatchSize : $this->batchSize * 2;
     }
 }

@@ -20,6 +20,8 @@ class Producer {
     protected $exchange;
     /** @var EncoderInterface */
     protected $encoder;
+    /** @var \PhpAmqpLib\Channel\AMQPChannel */
+    protected $channel;
 
     /**
      * @param $name
@@ -28,6 +30,7 @@ class Producer {
     public function __construct($name = null, Exchange $exchange = null) {
         $this->name = $name;
         $this->exchange = $exchange;
+        $this->channel = $this->getExchange()->getConnection()->channel();
     }
 
     /**
@@ -111,6 +114,7 @@ class Producer {
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     protected function basicPublish(Message $message, $routingKey) {
+
         $encodedMessage = $this->encoder->encode($message->getData());
         $properties = array(
             Message::CONTENT_TYPE_PROPERTY => $message->getContentType(),
@@ -122,8 +126,7 @@ class Producer {
         if (empty($this->exchange)) {
             throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to speficify exchange for this producer.");
         }
-        $channel = $this->getExchange()->getConnection()->channel();
-        $channel->basic_publish($msg, $this->getExchange()->getName(), $routingKey);
+        $this->channel->basic_publish($msg, $this->getExchange()->getName(), $routingKey);
     }
 
 }
