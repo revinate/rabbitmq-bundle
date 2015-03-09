@@ -30,7 +30,9 @@ class Producer {
     public function __construct($name = null, Exchange $exchange = null) {
         $this->name = $name;
         $this->exchange = $exchange;
-        $this->channel = $this->getExchange()->getConnection()->channel();
+        if ($exchange) {
+            $this->channel = $this->getExchange()->getConnection()->channel();
+        }
     }
 
     /**

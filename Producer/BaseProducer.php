@@ -21,5 +21,6 @@ class BaseProducer extends Producer {
      */
     public function setExchange(Exchange $exchange) {
         $this->exchange = $exchange;
+        $this->channel = $this->getExchange()->getConnection()->channel();
     }
 }
