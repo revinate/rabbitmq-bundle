@@ -29,6 +29,13 @@ class ConsumerCommand extends ContainerAwareCommand {
     }
 
     /**
+     * Stop the command
+     */
+    protected function stop() {
+        exit(0);
+    }
+
+    /**
      * @see Symfony\Component\Console\Command\Command::initialize()
      */
     protected function initialize(InputInterface $input, OutputInterface $output) {
@@ -38,6 +45,14 @@ class ConsumerCommand extends ContainerAwareCommand {
      * @see Symfony\Component\Console\Command\Command::execute()
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
+        if (extension_loaded('pcntl')) {
+            if (!function_exists('pcntl_signal')) {
+                throw new \BadFunctionCallException("Function 'pcntl_signal' is referenced in the php.ini 'disable_functions' and can't be called.");
+            }
+            pcntl_signal(SIGTERM, array(&$this, 'stop'));
+            pcntl_signal(SIGINT, array(&$this, 'stop'));
+        }
+
         $consumerName = $input->getArgument('consumerName');
         $prefetchCount = intval($input->getArgument('prefetchCount'));
         $prefetchCount = $prefetchCount ?: 1;
