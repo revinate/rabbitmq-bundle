@@ -5,6 +5,7 @@ namespace Revinate\RabbitMqBundle\Consumer;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPTable;
 use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
 use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
 use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
@@ -62,7 +63,7 @@ class Consumer {
      * @param $name
      * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      */
-    public function __construct(ContainerInterface $container, $name, Queue $queue) {
+    public function __construct(ContainerInterface $container = null, $name, Queue $queue) {
         $this->container = $container;
         $this->name = $name;
         $this->connection = $queue->getExchange()->getConnection();
@@ -132,7 +133,12 @@ class Consumer {
         $amqpMessage = $message->getAmqpMessage();
         $channel = $amqpMessage->delivery_info['channel'];
         $deliveryTag = $amqpMessage->delivery_info['delivery_tag'];
-
+        /**
+         * When Container is not available like in Symfony 1.2, just reject requeue message intead of republish
+         */
+        if (is_null($this->container) && $processFlag === DeliveryResponse::MSG_REJECT_REPUBLISH) {
+            $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
+        }
         if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
@@ -381,7 +387,9 @@ class Consumer {
     public function getMessageFromAMQPMessage(AMQPMessage $amqpMessage) {
         $routingKey = $amqpMessage->delivery_info['routing_key'];
         $properties = $amqpMessage->get_properties();
+        /** @var AMQPTable|Array $headers */
         $headers = $properties['application_headers'];
+        $headers = $headers instanceof AMQPTable ? $headers->getNativeData() : $headers;
         $decodedData = $this->decoder->decode($amqpMessage->body);
         if ($this->getMessageClass()) {
             $messageClass = $this->getMessageClass();

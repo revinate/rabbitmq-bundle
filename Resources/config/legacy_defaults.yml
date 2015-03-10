@@ -1,0 +1,6 @@
+revinate_rabbit_mq:
+    default_connection: { host: localhost, port: 5672, user: guest, password: guest, vhost: /, lazy: false }
+    default_exchange: { type: topic, passive: false, durable: true, auto_delete: false, internal: false, nowait: false, managed: true, arguments: null, ticket: null }
+    default_queue: { passive: false, durable: true, exclusive: false, auto_delete: false, nowait: false, managed: true, arguments: null, ticket: null, routing_keys: [] }
+    default_producer: { encoder: Revinate\RabbitMqBundle\Encoder\JsonEncoder }
+    default_consumer: { idle_timeout: 0, message_class: null, batch_size: null, fairness_algorithm: null, buffer_wait: 1000, decoder: Revinate\RabbitMqBundle\Decoder\JsonDecoder, qos: { prefetch_size: 0, prefetch_count: 0, global: false} }
