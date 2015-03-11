@@ -1,14 +1,20 @@
-Legacy Support for frameworks older than Symfony 2
+#Legacy Support for frameworks older than Symfony 2#
 
-Sample Consumer
+##Sample Consumer##
+``
 RabbitMqServiceContainer::getInstance()
     ->getConsumer($consumerName)
     ->consume($prefetchCount);
+``
 
-Sample Producer
+##Sample Producer##
+``
 RabbitMqServiceContainer::getInstance()
     ->getProducer($producerName)
     ->publish("test message", $routingKey)
+``
 
-How to Setup Exchanges and Queues in RabbitMq
+##How to Setup Exchanges and Queues in RabbitMq##
+``
 RabbitMqServiceContainer::getInstance()->setup();
+``
