@@ -51,6 +51,37 @@ class ServiceContainer {
     }
 
     /**
+     * Setup all Exchanges and Queues
+     */
+    public function setup() {
+        echo "\n\nDeclaring Exchanges\n";
+        foreach ($this->config['exchanges'] as $name => $config) {
+            $exchange = $this->getExchange($name);
+            $response = null;
+            if (!$exchange->getManaged()) {
+                echo "Skipped : ";
+            } else {
+                $exchange->declareExchange();
+                echo "Declared: ";
+            }
+            echo $exchange->getName() . "\n" ;
+        }
+
+        echo "\n\nDeclaring Queues\n";
+        foreach ($this->config['queues'] as $name => $config) {
+            $queue = $this->getQueue($name);
+            $response = null;
+            if (!$queue->getManaged()) {
+                echo "Skipped : ";
+            } else {
+                $queue->declareQueue();
+                echo "Declared: ";
+            }
+            echo $queue->getName() . "\n" ;
+        }
+    }
+
+    /**
      * @param $name
      * @return AMQPStreamConnection
      * @throws \Exception
