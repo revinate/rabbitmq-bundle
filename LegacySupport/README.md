@@ -2,16 +2,12 @@
 
 ##Sample Consumer##
 ``
-RabbitMqServiceContainer::getInstance()
-    ->getConsumer($consumerName)
-    ->consume($prefetchCount);
+RabbitMqServiceContainer::getInstance()->getConsumer($consumerName)->consume($prefetchCount);
 ``
 
 ##Sample Producer##
 ``
-RabbitMqServiceContainer::getInstance()
-    ->getProducer($producerName)
-    ->publish("test message", $routingKey)
+RabbitMqServiceContainer::getInstance()->getProducer($producerName)->publish("test message", $routingKey)
 ``
 
 ##How to Setup Exchanges and Queues in RabbitMq##
