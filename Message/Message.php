@@ -168,10 +168,12 @@ class Message {
      */
     public function setHeaders($headers = null) {
         if ($headers) {
-            $this->headers = $headers;
+            $this->headers = array();
+            foreach ($headers as $index => $header) {
+                $this->headers[$index] = is_array($header) ? $header : array('S', $header);
+            }
         }
     }
-
     /**
      * @return array
      */
