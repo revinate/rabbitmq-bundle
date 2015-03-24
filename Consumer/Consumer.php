@@ -70,6 +70,14 @@ class Consumer {
         $this->queue = $queue;
         $this->channel = $this->connection->channel();
         $this->consumerTag = sprintf("PHPPROCESS_%s_%s", gethostname(), getmypid());
+
+        if (extension_loaded('pcntl')) {
+            if (!function_exists('pcntl_signal')) {
+                throw new \BadFunctionCallException("Function 'pcntl_signal' is referenced in the php.ini 'disable_functions' and can't be called.");
+            }
+            pcntl_signal(SIGTERM, array(&$this, 'stopConsuming'));
+            pcntl_signal(SIGINT, array(&$this, 'stopConsuming'));
+        }
     }
 
     /**
