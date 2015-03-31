@@ -20,7 +20,12 @@ services:
         class: Revinate\RabbitMqBundle\Encoder\JsonEncoder
     revinate.rabbit_mq.encoder.serialize:
         class: Revinate\RabbitMqBundle\Encoder\SerializeEncoder
+    revinate.rabbit_mq.encoder.string:
+        class: Revinate\RabbitMqBundle\Encoder\StringEncoder
+
     revinate.rabbit_mq.decoder.json:
         class: Revinate\RabbitMqBundle\Decoder\JsonDecoder
     revinate.rabbit_mq.decoder.serialize:
         class: Revinate\RabbitMqBundle\Decoder\SerializeDecoder
+    revinate.rabbit_mq.decoder.string:
+        class: Revinate\RabbitMqBundle\Decoder\StringDecoder

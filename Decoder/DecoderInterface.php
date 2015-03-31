@@ -4,7 +4,7 @@ namespace Revinate\RabbitMqBundle\Decoder;
 
 /**
  * Interface DecoderInterface
- * @package Revinate\RabbitMqBundle\Encoder
+ * @package Revinate\RabbitMqBundle\Decoder
  */
 interface DecoderInterface {
 

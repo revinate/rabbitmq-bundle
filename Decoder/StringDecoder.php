@@ -3,10 +3,10 @@
 namespace Revinate\RabbitMqBundle\Decoder;
 
 /**
- * Class SerializeDecoder
+ * Class StringDecoder
  * @package Revinate\RabbitMqBundle\Decoder
  */
-class SerializeDecoder implements DecoderInterface {
+class StringDecoder implements DecoderInterface {
 
     /**
      * @param string $value
@@ -14,6 +14,6 @@ class SerializeDecoder implements DecoderInterface {
      */
     public function decode($value)
     {
-        return unserialize($value);
+        return $value;
     }
 }

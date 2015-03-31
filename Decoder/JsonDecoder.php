@@ -4,7 +4,7 @@ namespace Revinate\RabbitMqBundle\Decoder;
 
 /**
  * Class JsonDecoder
- * @package Revinate\RabbitMqBundle\Encoder
+ * @package Revinate\RabbitMqBundle\Decoder
  */
 class JsonDecoder implements DecoderInterface {
 
