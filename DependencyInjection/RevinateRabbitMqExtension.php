@@ -3,7 +3,7 @@
 namespace Revinate\RabbitMqBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -58,6 +58,7 @@ class RevinateRabbitMqExtension extends Extension
                 $connection['password'],
                 $connection['vhost']
             ));
+            $definition->setLazy(true);
 
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.connection.%s', $key), $definition);
         }
@@ -120,6 +121,7 @@ class RevinateRabbitMqExtension extends Extension
                 $key,
                 $this->getExchange($producer['exchange']),
             ));
+            $definition->setLazy(true);
             $definition->addMethodCall('setEncoder', array(new Reference($producer['encoder'])));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
         }
