@@ -2,8 +2,11 @@
 
 namespace Revinate\RabbitMqBundle\DependencyInjection;
 
+use Revinate\RabbitMqBundle\Exceptions\MissingCallbacksForConsumerException;
+use Revinate\RabbitMqBundle\Exceptions\NoCallbacksConfiguredForConsumerException;
+use Revinate\RabbitMqBundle\Exceptions\NoQueuesConfiguredForConsumerException;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -58,7 +61,6 @@ class RevinateRabbitMqExtension extends Extension
                 $connection['password'],
                 $connection['vhost']
             ));
-            $definition->setLazy(true);
 
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.connection.%s', $key), $definition);
         }
@@ -121,7 +123,6 @@ class RevinateRabbitMqExtension extends Extension
                 $key,
                 $this->getExchange($producer['exchange']),
             ));
-            $definition->setLazy(true);
             $definition->addMethodCall('setEncoder', array(new Reference($producer['encoder'])));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
         }
@@ -132,13 +133,35 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadConsumers() {
         foreach ($this->config['consumers'] as $key => $consumer) {
+            $queueNames = array();
+            $callbackNames = array();
+            if (! is_null($consumer['queue'])) {
+                $queueNames[] = $consumer['queue'];
+            } else if (! empty($consumer['queues'])) {
+                $queueNames = $consumer['queues'];
+            }
+            if (! is_null($consumer['callback'])) {
+                $callbackNames[] = $consumer['callback'];
+            } else if (! empty($consumer['callbacks'])) {
+                $callbackNames = $consumer['callbacks'];
+            }
+            if (empty($queueNames)) {
+                throw new NoQueuesConfiguredForConsumerException(__METHOD__ . " $key: This consumer is not configured to listen to any queues.");
+            }
+            if (empty($callbackNames)) {
+                throw new NoCallbacksConfiguredForConsumerException(__METHOD__ . " $key: This consumer is not configured with any callbacks.");
+            }
+            if (count($queueNames) != count($callbackNames)) {
+                throw new MissingCallbacksForConsumerException(__METHOD__ . " $key: Some queues are missing callbacks");
+            }
+
             $definition = new Definition('%revinate_rabbit_mq.consumer.class%', array(
                 $this->getContainer(),
                 $key,
-                $this->getQueue($consumer['queue']),
+                $this->getQueues($queueNames),
             ));
-            $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
-            $definition->addMethodCall('setSetContainerCallback', array(array(new Reference($consumer['callback']), 'setContainer')));
+            $definition->addMethodCall('setCallbacks', array($this->getCallbacks($callbackNames, 'execute')));
+            $definition->addMethodCall('setSetContainerCallbacks', array($this->getCallbacks($callbackNames, 'setContainer')));
             $definition->addMethodCall('setIdleTimeout', array($consumer['idle_timeout']));
             $definition->addMethodCall('setBatchSize', array($consumer['batch_size']));
             $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
@@ -188,10 +211,27 @@ class RevinateRabbitMqExtension extends Extension
     }
 
     /**
-     * @param $queueName
+     * @param string[] $queueNames
      * @return Reference
      */
-    protected function getQueue($queueName) {
-        return new Reference(sprintf('revinate_rabbit_mq.queue.%s', $queueName));
+    protected function getQueues($queueNames) {
+        $queues = array();
+        foreach ($queueNames as $queueName) {
+            $queues[] = new Reference(sprintf('revinate_rabbit_mq.queue.%s', $queueName));
+        }
+        return $queues;
+    }
+
+    /**
+     * @param $callbackNames
+     * @param $methodName
+     * @return array
+     */
+    protected function getCallbacks($callbackNames, $methodName) {
+        $callbacks = array();
+        foreach ($callbackNames as $callbackName) {
+            $callbacks[] = array(new Reference($callbackName), $methodName);
+        }
+        return $callbacks;
     }
 }

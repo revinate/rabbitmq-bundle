@@ -14,6 +14,7 @@ class DeliveryResponse {
     const MSG_ACK = 1;
     /**
      * Flag single for message nack and requeue
+     * https://www.rabbitmq.com/nack.html
      */
     const MSG_SINGLE_NACK_REQUEUE = 2;
     /**
@@ -24,9 +25,4 @@ class DeliveryResponse {
      * Flag for reject and drop
      */
     const MSG_REJECT = -1;
-
-    /**
-     * Rejects and Republishes to the exchange
-     */
-    const MSG_REJECT_REPUBLISH = 3;
 }

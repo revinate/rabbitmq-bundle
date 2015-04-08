@@ -3,6 +3,7 @@
 namespace Revinate\RabbitMqBundle\Command;
 
 use PhpAmqpLib\Exception\AMQPTimeoutException;
+use Revinate\RabbitMqBundle\Consumer\ConsumerManager;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,7 +24,7 @@ class ConsumerCommand extends ContainerAwareCommand {
             ->setName(self::COMMAND_NAME)
             ->setDescription('Default Consumer Command')
             ->addArgument('consumerName', InputArgument::REQUIRED, 'Consumer Name')
-            ->addArgument('prefetchCount', InputArgument::OPTIONAL, 'Prefetch Count')
+            ->addArgument('target', InputArgument::OPTIONAL, 'Target number of messages to consume', 1)
         ;
     }
 
@@ -38,15 +39,15 @@ class ConsumerCommand extends ContainerAwareCommand {
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
         $consumerName = $input->getArgument('consumerName');
-        $prefetchCount = intval($input->getArgument('prefetchCount'));
-        $prefetchCount = $prefetchCount ?: 1;
+        $target = intval($input->getArgument('target'));
+        $target = $target ?: 1;
         $consumerService = "revinate_rabbit_mq.consumer.$consumerName";
 
         // Create batch or single consumer based on the type of consumer
         /** @var \Revinate\RabbitMqBundle\Consumer\Consumer $consumer */
         $consumer = $this->getContainer()->get($consumerService);
         try {
-            $consumer->consume($prefetchCount);
+            $consumer->consume($target);
         } catch (AMQPTimeoutException $e) {
             ;
         }

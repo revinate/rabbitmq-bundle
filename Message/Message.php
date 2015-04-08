@@ -7,6 +7,7 @@ use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Lib\DateHelper;
 use Revinate\RabbitMqBundle\Lib\TextHelper;
+use Revinate\RabbitMqBundle\Queue\Queue;
 
 /**
  * Class Message
@@ -32,6 +33,8 @@ class Message {
     protected $data;
     /** @var Consumer */
     protected $consumer;
+    /** @var Queue */
+    protected $queue;
     /** @var  AMQPMessage */
     protected $amqpMessage;
     /** @var  string */
@@ -290,6 +293,20 @@ class Message {
     }
 
     /**
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
+     */
+    public function setQueue($queue) {
+        $this->queue = $queue;
+    }
+
+    /**
+     * @return \Revinate\RabbitMqBundle\Queue\Queue
+     */
+    public function getQueue() {
+        return $this->queue;
+    }
+
+    /**
      * @param \PhpAmqpLib\Message\AMQPMessage $amqpMessage
      */
     public function setAmqpMessage($amqpMessage)
@@ -341,6 +358,7 @@ class Message {
     public function getExchangeName() {
         return $this->amqpMessage ? $this->amqpMessage->delivery_info['exchange'] : null;
     }
+
 
     /**
      * @return string

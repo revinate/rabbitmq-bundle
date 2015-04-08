@@ -11,6 +11,8 @@ use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
 use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
 use Revinate\RabbitMqBundle\Decoder\DecoderInterface;
 use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
+use Revinate\RabbitMqBundle\Exceptions\NoQueuesConfiguredForConsumerException;
+use Revinate\RabbitMqBundle\Exceptions\QueuesHavingMultipleConnectionsException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Producer\BaseProducer;
 use Revinate\RabbitMqBundle\Queue\Queue;
@@ -31,22 +33,18 @@ class Consumer {
     protected $connection;
     /** @var AMQPChannel  */
     protected $channel;
-    /** @var Queue */
-    protected $queue;
-    /** @var MessageProcessorInterface  */
-    protected $messageProcessor;
+    /** @var Queue[] */
+    protected $queues;
     /** @var int  */
     protected $target = 1;
-    /** @var int  */
-    protected $consumed = 0;
-    /** @var */
-    protected $callback;
-    /** @var   */
-    protected $setContainerCallback;
+    /** @var array number consumed per queue  */
+    protected $consumed = array();
+    /** @var array callbacks for each queue */
+    protected $callbacks;
+    /** @var  array setContainer callbacks for each queue */
+    protected $setContainerCallbacks;
     /** @var int  */
     protected $idleTimeout = 0;
-    /** @var  string */
-    protected $consumerTag;
     /** @var int  */
     protected $batchSize = null;
     /** @var  int If using batchSize, wait for these many ms before flushing buffer */
@@ -61,16 +59,26 @@ class Consumer {
     /**
      * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      * @param $name
-     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
+     * @param Queue[] $queues
+     * @throws \BadFunctionCallException
+     * @internal param \Revinate\RabbitMqBundle\Queue\Queue[] $queue
      */
-    public function __construct(ContainerInterface $container = null, $name, Queue $queue) {
+    public function __construct(ContainerInterface $container = null, $name, Array $queues) {
         $this->container = $container;
         $this->name = $name;
-        $this->connection = $queue->getExchange()->getConnection();
-        $this->queue = $queue;
+        // Use first queues connection as the default connection
+        $this->connection = $queues[0]->getExchange()->getConnection();
         $this->channel = $this->connection->channel();
-        $this->consumerTag = sprintf("PHPPROCESS_%s_%s", gethostname(), getmypid());
+        $this->queues = $queues;
 
+        $this->validateQueues();
+        $this->loadSignalHandlers();
+    }
+
+    /**
+     * @throws \BadFunctionCallException
+     */
+    protected function loadSignalHandlers() {
         if (extension_loaded('pcntl')) {
             if (!function_exists('pcntl_signal')) {
                 throw new \BadFunctionCallException("Function 'pcntl_signal' is referenced in the php.ini 'disable_functions' and can't be called.");
@@ -81,10 +89,15 @@ class Consumer {
     }
 
     /**
-     * Setup Consumer to Consume Messages
+     * Ensure all consumers are using the same connection
      */
-    protected function setupConsumer() {
-        $this->getChannel()->basic_consume($this->getQueue()->getName(), $this->getConsumerTag(), false, false, false, false, array($this->messageProcessor, 'processMessage'));
+    protected function validateQueues() {
+        $connection = $this->queues[0]->getConnection();
+        foreach ($this->queues as $queue) {
+            if ($connection !== $queue->getConnection()) {
+                throw new QueuesHavingMultipleConnectionsException(__METHOD__ . " Can't read from given queues as they use different connections.");
+            }
+        }
     }
 
     /**
@@ -93,28 +106,23 @@ class Consumer {
      */
     public function consume($messageCount) {
         $this->setTarget($messageCount);
-        $this->messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
-        $this->setupConsumer();
+        foreach ($this->queues as $queue) {
+            $messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
+            $messageProcessor->setQueue($queue);
+            $this->getChannel()->basic_consume($queue->getName(), $this->getConsumerTag($queue), false, false, false, false, array($messageProcessor, 'processMessage'));
+        }
+        $this->waitForMessages();
+    }
+
+    /**
+     * Wait for messages and call the callback
+     */
+    protected function waitForMessages() {
         while (count($this->getChannel()->callbacks)) {
             $this->stopConsumerIfTargetReached();
             $this->getChannel()->wait(null, false, $this->getIdleTimeout());
         }
     }
-
-    /**
-     * Purge the queue
-     */
-    public function purge() {
-        $this->getChannel()->queue_purge($this->getQueue()->getName(), true);
-    }
-
-    /**
-     * Stop Consuming
-     */
-    public function stopConsuming() {
-        $this->getChannel()->basic_cancel($this->getConsumerTag());
-    }
-
 
     /**
      * May be stop the consumer
@@ -127,9 +135,19 @@ class Consumer {
             }
             pcntl_signal_dispatch();
         }
-        if ($this->getTarget() > 0 && $this->getConsumed() >= $this->getTarget()) {
-            $this->stopConsuming();
+        foreach ($this->queues as $queue) {
+            if ($this->getTarget() > 0 && $this->getConsumed($queue) >= $this->getTarget()) {
+                $this->stopConsuming($queue);
+            }
         }
+    }
+
+    /**
+     * Stop Consuming
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
+     */
+    public function stopConsuming(Queue $queue) {
+        $this->getChannel()->basic_cancel($this->getConsumerTag($queue));
     }
 
     /**
@@ -141,12 +159,6 @@ class Consumer {
         $amqpMessage = $message->getAmqpMessage();
         $channel = $amqpMessage->delivery_info['channel'];
         $deliveryTag = $amqpMessage->delivery_info['delivery_tag'];
-        /**
-         * When Container is not available like in Symfony 1.2, just reject requeue message intead of republish
-         */
-        if (is_null($this->container) && $processFlag === DeliveryResponse::MSG_REJECT_REPUBLISH) {
-            $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
-        }
         if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
@@ -156,18 +168,11 @@ class Consumer {
         } else if ($processFlag === DeliveryResponse::MSG_REJECT) {
             // Reject and drop
             $channel->basic_reject($deliveryTag, false);
-        } else if ($processFlag === DeliveryResponse::MSG_REJECT_REPUBLISH) {
-            /** @var BaseProducer $baseProducer */
-            $baseProducer = $this->container->get('revinate.rabbit_mq.base_producer');
-            /** @var Exchange $exchange */
-            $exchange = $this->container->get('revinate.rabbit_mq.exchange' . $message->getExchangeName());
-            $baseProducer->setExchange($exchange);
-            $baseProducer->rePublish($message);
         } else {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);
         }
-        $this->incrementConsumed(1);
+        $this->incrementConsumed($message->getQueue(), 1);
     }
 
     /**
@@ -212,14 +217,6 @@ class Consumer {
     }
 
     /**
-     * @return Queue
-     */
-    public function getQueue()
-    {
-        return $this->queue;
-    }
-
-    /**
      * @param int $batchSize
      */
     public function setBatchSize($batchSize)
@@ -243,53 +240,52 @@ class Consumer {
     }
 
     /**
-     * @param $callback
+     * @param $callbacks
      */
-    public function setCallback($callback) {
-        $this->callback = $callback;
+    public function setCallbacks($callbacks) {
+        foreach ($this->queues as $index => $queue) {
+            $this->callbacks[$queue->getName()] = $callbacks[$index];
+        }
     }
 
     /**
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      * @throws \Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException
      * @return null
      */
-    public function getCallback() {
-        if (is_null($this->callback)) {
-            throw new NoConsumerCallbackForMessageException("No callback specified for consumer: " . $this->getName());
+    public function getCallback(Queue $queue) {
+        if (! isset($this->callbacks[$queue->getName()])) {
+            throw new NoConsumerCallbackForMessageException("No callback specified for consumer queue: " . $this->getName() . ": " . $queue->getName());
         }
-        return $this->callback;
+        return $this->callbacks[$queue->getName()];
     }
 
     /**
-     * @param mixed $setContainerCallback
+     * @param mixed $setContainerCallbacks
      */
-    public function setSetContainerCallback($setContainerCallback)
+    public function setSetContainerCallbacks($setContainerCallbacks)
     {
-        $this->setContainerCallback = $setContainerCallback;
+        foreach ($this->queues as $index => $queue) {
+            $this->setContainerCallbacks[$queue->getName()] = $setContainerCallbacks[$index];
+        }
     }
 
     /**
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      * @return mixed
      */
-    public function getSetContainerCallback()
+    public function getSetContainerCallback(Queue $queue)
     {
-        return $this->setContainerCallback;
+        return $this->setContainerCallbacks[$queue->getName()];
     }
 
     /**
-     * @param string $consumerTag
-     */
-    public function setConsumerTag($consumerTag)
-    {
-        $this->consumerTag = $consumerTag;
-    }
-
-    /**
+     * @param Queue $queue
      * @return string
      */
-    public function getConsumerTag()
+    public function getConsumerTag(Queue $queue)
     {
-        return $this->consumerTag;
+        return sprintf("PHPPROCESS_%s_%s_%s", gethostname(), getmypid(), $queue->getName());
     }
 
     /**
@@ -302,18 +298,24 @@ class Consumer {
 
     /**
      * Increment Consumed
-     *
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
+     * @param int $by
+     * @internal param $
      */
-    public function incrementConsumed($by = 1) {
-        $this->consumed = $this->consumed + $by;
+    public function incrementConsumed(Queue $queue, $by = 1) {
+        if (! isset($this->consumed[$queue->getName()])) {
+            $this->consumed[$queue->getName()] = 0;
+        }
+        $this->consumed[$queue->getName()] = $this->consumed[$queue->getName()] + $by;
     }
 
     /**
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      * @return int
      */
-    public function getConsumed()
+    public function getConsumed(Queue $queue)
     {
-        return $this->consumed;
+        return isset($this->consumed[$queue->getName()]) ? $this->consumed[$queue->getName()] : 0;
     }
 
     /**
@@ -346,22 +348,6 @@ class Consumer {
     public function getFairnessAlgorithm()
     {
         return $this->fairnessAlgorithm;
-    }
-
-    /**
-     * @param \Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface $messageProcessor
-     */
-    public function setMessageProcessor($messageProcessor)
-    {
-        $this->messageProcessor = $messageProcessor;
-    }
-
-    /**
-     * @return \Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface
-     */
-    public function getMessageProcessor()
-    {
-        return $this->messageProcessor;
     }
 
     /**

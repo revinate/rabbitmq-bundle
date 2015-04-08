@@ -10,6 +10,7 @@ use Revinate\RabbitMqBundle\Exceptions\RejectRepublishException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
+use Revinate\RabbitMqBundle\Queue\Queue;
 
 /**
  * Class BaseMessageProcessor
@@ -19,6 +20,9 @@ abstract class BaseMessageProcessor {
 
     /** @var Consumer  */
     protected $consumer;
+
+    /** @var  Queue */
+    protected $queue;
 
     /**
      * @param Consumer $consumer
@@ -38,6 +42,7 @@ abstract class BaseMessageProcessor {
             $message = $this->consumer->getMessageFromAMQPMessage($amqpMessage);
             $message->setDequeuedAt(new \DateTime('now'));
             $message->setConsumer($this->consumer);
+            $message->setQueue($this->getQueue());
             $messages[] = $message;
         }
         $firstMessage = $messages[0];
@@ -48,19 +53,16 @@ abstract class BaseMessageProcessor {
             if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
                 $this->setCallbackContainer();
                 $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
+                $queue = $firstMessage->getQueue();
                 // In case of BatchConsumer, $processFlag must be an array
-                $processFlag = call_user_func_array($this->consumer->getCallback(), array($messageParam));
+                $processFlag = call_user_func_array($this->consumer->getCallback($queue), array($messageParam));
                 foreach ($messages as $message) {
                     $message->setProcessedAt(new \DateTime('now'));
                 }
             } else {
                 error_log("Event Requeued due to unfairness. Key: " . $firstMessage->getFairnessKey());
-                $processFlag = DeliveryResponse::MSG_REJECT_REPUBLISH;
+                $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
             }
-        } catch (RejectRepublishException $e) {
-            // error_log("Republishing message");
-            $processFlag = DeliveryResponse::MSG_REJECT_REPUBLISH;
-            $isException = true;
         } catch (RejectRequeueException $e) {
             // error_log("Event Requeued due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
@@ -122,9 +124,25 @@ abstract class BaseMessageProcessor {
      * Set Container on the consumer
      */
     protected function setCallbackContainer() {
-        if (!is_callable($this->consumer->getSetContainerCallback())) {
+        $callback = $this->consumer->getSetContainerCallback($this->getQueue());
+        if (! is_callable($callback)) {
             return;
         }
-        call_user_func($this->consumer->getSetContainerCallback(), $this->consumer->getContainer());
+        call_user_func($callback, $this->consumer->getContainer());
     }
+
+    /**
+     * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
+     */
+    public function setQueue($queue) {
+        $this->queue = $queue;
+    }
+
+    /**
+     * @return \Revinate\RabbitMqBundle\Queue\Queue
+     */
+    public function getQueue() {
+        return $this->queue;
+    }
+
 }
