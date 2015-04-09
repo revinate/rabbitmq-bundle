@@ -55,6 +55,10 @@ class Consumer {
     protected $messageClass = null;
     /** @var  DecoderInterface */
     protected $decoder;
+    /** @var array  */
+    protected $qosOptions = array();
+    /** @var  array */
+    protected $stoppedQueue = array();
 
     /**
      * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -67,8 +71,8 @@ class Consumer {
         $this->container = $container;
         $this->name = $name;
         // Use first queues connection as the default connection
-        $this->connection = $queues[0]->getExchange()->getConnection();
-        $this->channel = $this->connection->channel();
+        $this->connection = $queues[0]->getConnection();
+        $this->channel = $queues[0]->getChannel();
         $this->queues = $queues;
 
         $this->validateQueues();
@@ -109,9 +113,38 @@ class Consumer {
         foreach ($this->queues as $queue) {
             $messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
             $messageProcessor->setQueue($queue);
+            $this->getChannel()->basic_qos($this->qosOptions['prefetch_size'], $this->getPrefetchCount(), $this->qosOptions['global']);
             $this->getChannel()->basic_consume($queue->getName(), $this->getConsumerTag($queue), false, false, false, false, array($messageProcessor, 'processMessage'));
         }
         $this->waitForMessages();
+    }
+
+    /**
+     * For batch consumers, assume prefetch count = target as doing anything else causes issues
+     * where rabbitmq doesn't send messages until the previous prefetch size is acked.
+     * The problem specially arises when prefetch size != batch size.
+     * Example:
+     * Assume batch size is 10 and prefetch Count is 10.
+     * - In our implementation, batch size increases like 1,2,4,8,16 etc till the batch size. So
+     *   in this example, batch size increases like 1,2,4,8,10,10,10...
+     * - If prefetch count is 10, server sends over 10 messages to the client.
+     * - When batch size is 1, 1 message is consumed and acked
+     * - When batch size is 2, 2 messages are consumed and acked
+     * - When batch size is 4, 4 messages are consumed and acked
+     * - Till now total of 7 messages are consumed. Now batch size is 8 and 3 messages are waiting to be consumed.
+     *   Since 3 < 8 (batch size), we do not flush the queue and server does not send any more messages since it
+     *   has not received ack for all 10 messages (prefetch count = 10). Therefore, we are stuck in a deadlock
+     *   and process quits after timeout. Note that, buffer_wait doesn't help here since for us to flush the buffer,
+     *   we need to receive atleast 1 message.
+     *
+     * @return int
+     */
+    protected function getPrefetchCount() {
+        $prefetchCount = $this->qosOptions['prefetch_count'];
+        if ($this->isBatchConsumer() && $this->qosOptions['prefetch_count'] < $this->getTarget()) {
+            $prefetchCount = $this->getTarget();
+        }
+        return $prefetchCount;
     }
 
     /**
@@ -147,7 +180,11 @@ class Consumer {
      * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      */
     public function stopConsuming(Queue $queue) {
+        if (isset($this->stoppedQueue[$queue->getName()])) {
+            return;
+        }
         $this->getChannel()->basic_cancel($this->getConsumerTag($queue));
+        $this->stoppedQueue[$queue->getName()] = true;
     }
 
     /**
@@ -179,12 +216,10 @@ class Consumer {
      * Sets the qos settings for the current channel
      * Consider that prefetchSize and global do not work with rabbitMQ version <= 8.0
      *
-     * @param int  $prefetchSize
-     * @param int  $prefetchCount
-     * @param bool $global
+     * @param array $qosOptions
      */
-    public function setQosOptions($prefetchSize = 0, $prefetchCount = 0, $global = false) {
-        $this->getChannel()->basic_qos($prefetchSize, $prefetchCount, $global);
+    public function setQosOptions($qosOptions) {
+        $this->qosOptions = $qosOptions;
     }
 
     /**
@@ -316,6 +351,14 @@ class Consumer {
     public function getConsumed(Queue $queue)
     {
         return isset($this->consumed[$queue->getName()]) ? $this->consumed[$queue->getName()] : 0;
+    }
+
+    /**
+     * @param Queue $queue
+     * @return int
+     */
+    public function getToConsume(Queue $queue) {
+        return $this->getTarget() - $this->getConsumed($queue);
     }
 
     /**

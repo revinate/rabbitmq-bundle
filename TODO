@@ -1,7 +1,3 @@
 - Logging
 - Decouple Fairness code a bit
-
-
-
-Symfony 1.2 Support
-- Config loader which instantiates all exchanges, consumers and producers.
+- Set service definition in Services class so that we don't load connections all the time

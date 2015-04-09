@@ -57,6 +57,7 @@ class Queue {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
         $this->connection = $exchange->getConnection();
+        $this->channel = $this->connection->channel();
         $this->exchange = $exchange;
         $this->name = $name;
         $this->passive = $passive;
@@ -250,6 +251,13 @@ class Queue {
     public function getConnection()
     {
         return $this->connection;
+    }
+
+    /**
+     * @return \PhpAmqpLib\Channel\AMQPChannel
+     */
+    public function getChannel() {
+        return $this->channel;
     }
 
     /**

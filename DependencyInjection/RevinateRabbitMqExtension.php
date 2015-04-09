@@ -6,7 +6,7 @@ use Revinate\RabbitMqBundle\Exceptions\MissingCallbacksForConsumerException;
 use Revinate\RabbitMqBundle\Exceptions\NoCallbacksConfiguredForConsumerException;
 use Revinate\RabbitMqBundle\Exceptions\NoQueuesConfiguredForConsumerException;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -61,6 +61,7 @@ class RevinateRabbitMqExtension extends Extension
                 $connection['password'],
                 $connection['vhost']
             ));
+            $definition->setLazy(true);
 
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.connection.%s', $key), $definition);
         }
@@ -123,6 +124,7 @@ class RevinateRabbitMqExtension extends Extension
                 $key,
                 $this->getExchange($producer['exchange']),
             ));
+            $definition->setLazy(true);
             $definition->addMethodCall('setEncoder', array(new Reference($producer['encoder'])));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
         }
@@ -170,19 +172,11 @@ class RevinateRabbitMqExtension extends Extension
             if (isset($consumer['fairness_algorithm'])) {
                 $definition->addMethodCall('setFairnessAlgorithm', array(new Reference($consumer['fairness_algorithm'])));
             }
-            // Make prefetch-count to match batch-size if specified
-            if (isset($consumer['batch_size'])) {
-                $consumer['qos_options'] = isset($consumer['qos_options']) ? $consumer['qos_options'] :
-                    array('prefetch_size' => 0, 'prefetch_count' => 0, 'global' => false);
-                $consumer['qos_options'] = array_replace($consumer['qos_options'], array('prefetch_count' => $consumer['batch_size']));
-            }
-            if (array_key_exists('qos_options', $consumer)) {
-                $definition->addMethodCall('setQosOptions', array(
-                    $consumer['qos_options']['prefetch_size'],
-                    $consumer['qos_options']['prefetch_count'],
-                    $consumer['qos_options']['global']
-                ));
-            }
+
+            $defaultQosOptions =  array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
+            $consumer['qos_options'] = isset($consumer['qos_options']) ? array_replace($defaultQosOptions, $consumer['qos_options']) : $defaultQosOptions;
+            $definition->addMethodCall('setQosOptions', array($consumer['qos_options']));
+
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.consumer.%s', $key), $definition);
         }
     }

@@ -55,10 +55,17 @@ class BatchMessageProcessor extends BaseMessageProcessor implements MessageProce
      * @return int if batch should be processed, return > 0
      */
     protected function getBatchSizeToProcess() {
+        $toConsume = $this->consumer->getToConsume($this->getQueue());
         $return = 0;
         if (count($this->amqpMessages) >= $this->batchSize) {
             $return = $this->batchSize;
         } else if (microtime(true) * 1000 - $this->processedBatchAt > $this->consumer->getBufferWait()) {
+            $return = count($this->amqpMessages);
+        }
+        if ($return > $toConsume) {
+            $return = $toConsume;
+        }
+        if (count($this->amqpMessages) >= $toConsume - 1) {
             $return = count($this->amqpMessages);
         }
         return $return;
