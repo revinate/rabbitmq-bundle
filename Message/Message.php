@@ -169,7 +169,7 @@ class Message {
     /**
      * @param $headers
      */
-    public function setHeaders($headers = null) {
+    protected function setHeaders($headers = null) {
         if ($headers) {
             $this->headers = array();
             foreach ($headers as $index => $header) {
@@ -186,10 +186,14 @@ class Message {
 
     /**
      * @param string $key
-     * @param string $stringValue
+     * @param string $value
      */
-    public function addHeader($key, $stringValue) {
-        $this->headers[$key] = array('S', $stringValue);
+    public function addHeader($key, $value) {
+        $type = 'S';
+        if (is_array($value)) {
+            $type = 'A';
+        }
+        $this->headers[$key] = array('A', $stringValue);
     }
 
     /**
