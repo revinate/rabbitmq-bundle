@@ -8,6 +8,7 @@ use Revinate\RabbitMqBundle\Exceptions\InvalidCountOfResponseStatusesException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRepublishException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
+use Revinate\RabbitMqBundle\Exceptions\RejectRequeueStopException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\Queue\Queue;
@@ -66,6 +67,10 @@ abstract class BaseMessageProcessor {
         } catch (RejectRequeueException $e) {
             // error_log("Event Requeued due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
+            $isException = true;
+        } catch (RejectRequeueStopException $e) {
+            // error_log("Event Requeued due to processing error: " . $e->getMessage() . ", quiting");
+            $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE_STOP;
             $isException = true;
         } catch (RejectDropException $e) {
             // error_log("Event Dropped due to processing error: " . $e->getMessage());
