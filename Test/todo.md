@@ -1,0 +1,14 @@
+Tests:
+- Presence of services
+- Presence of commands
+- Simple Producer
+- Producer with various encoders
+- Simple Consumer
+- Consumer with timeout
+- Bulk Consumer
+- Bulk Consumer with Buffer wait
+- Bulk Consumer with timeout
+- Reading from Multiple queues
+- Consumer with Custom Message Class
+- Consumer QOS options
+- Fair publish ?

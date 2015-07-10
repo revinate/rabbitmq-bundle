@@ -215,6 +215,10 @@ class Consumer {
         } else if ($processFlag === DeliveryResponse::MSG_REJECT) {
             // Reject and drop
             $channel->basic_reject($deliveryTag, false);
+        } else if ($processFlag == DeliveryResponse::MSG_REJECT_REQUEUE_STOP) {
+            // Reject and requeue message to RabbitMQ
+            $channel->basic_reject($deliveryTag, true);
+            $this->stopAllConsumers(SIGQUIT);
         } else {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);

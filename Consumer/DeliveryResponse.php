@@ -25,4 +25,9 @@ class DeliveryResponse {
      * Flag for reject and drop
      */
     const MSG_REJECT = -1;
+
+    /**
+     * Flag for reject, requeue and stop
+     */
+    const MSG_REJECT_REQUEUE_STOP = 3;
 }

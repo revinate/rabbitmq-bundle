@@ -94,13 +94,16 @@ class Queue {
          } else {
              $channel->queue_bind($queueName, $this->getExchange()->getName(), '');
          }
-        // Add Queue name as the routing key so that we can republish message for this queue only
-        $channel->queue_bind($queueName, $this->getExchange()->getName(), "queue." . $queueName);
-
         $this->isDeclared = true;
         return $response;
     }
 
+    /**
+     * Delete Queue
+     */
+    public function deleteQueue() {
+        $this->connection->channel()->queue_delete($this->getName());
+    }
 
     /**
      * @param Array $arguments

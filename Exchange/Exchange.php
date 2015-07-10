@@ -86,6 +86,13 @@ class Exchange {
     }
 
     /**
+     * Delete Exchange
+     */
+    public function deleteExchange() {
+        $this->connection->channel()->exchange_delete($this->getName());
+    }
+
+    /**
      * @return Array
      */
     public function getArguments()

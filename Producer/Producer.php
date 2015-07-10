@@ -5,6 +5,7 @@ use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\Encoder\DecoderInterface;
 use Revinate\RabbitMqBundle\Encoder\EncoderInterface;
+use Revinate\RabbitMqBundle\Encoder\JsonEncoder;
 use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Message\Message;
@@ -67,7 +68,7 @@ class Producer {
     }
 
     /**
-     * @param array|Message $data
+     * @param string|array|Message $data
      * @param string $routingKey
      */
     public function publish($data, $routingKey) {
@@ -78,9 +79,8 @@ class Producer {
     /**
      * @param Message $message
      * @param null $newRoutingKey New Event Name under which to publish this message
-     * @deprecated You should not be publishing for all consumers. Use republish() instead
      */
-    protected  function rePublishForAll(Message $message, $newRoutingKey = null) {
+    public function rePublishForAll(Message $message, $newRoutingKey = null) {
         $newRoutingKey = $newRoutingKey ? $newRoutingKey : $message->getRoutingKey();
         $message->incrementRetryCount();
         $this->basicPublish($message, $newRoutingKey);
@@ -106,7 +106,10 @@ class Producer {
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     protected function basicPublish(Message $message, $routingKey) {
-
+        if (! $this->encoder) {
+            // Use Default Encoder
+            $this->encoder = new JsonEncoder();
+        }
         $encodedMessage = $this->encoder->encode($message->getData());
         $properties = array(
             Message::CONTENT_TYPE_PROPERTY => $message->getContentType(),
