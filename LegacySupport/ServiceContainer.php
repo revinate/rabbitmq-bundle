@@ -179,7 +179,7 @@ class ServiceContainer {
             $this->throwError("Consumer: $name");
         }
         $consumer = array_merge($this->config['default_consumer'], $this->config['consumers'][$name]);
-        $consumerInstance = new Consumer(null, $name, $this->getQueue($consumer['queue']));
+        $consumerInstance = new Consumer(null, $name, array($this->getQueue($consumer['queue'])));
         $consumerInstance->setCallbacks(array(array(new $consumer['callback'], 'execute')));
         $consumerInstance->setIdleTimeout($consumer['idle_timeout']);
         $consumerInstance->setBatchSize($consumer['batch_size']);
