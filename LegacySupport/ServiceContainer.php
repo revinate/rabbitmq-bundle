@@ -180,7 +180,7 @@ class ServiceContainer {
         }
         $consumer = array_merge($this->config['default_consumer'], $this->config['consumers'][$name]);
         $consumerInstance = new Consumer(null, $name, $this->getQueue($consumer['queue']));
-        $consumerInstance->setCallback(array(new $consumer['callback'], 'execute'));
+        $consumerInstance->setCallbacks(array(array(new $consumer['callback'], 'execute')));
         $consumerInstance->setIdleTimeout($consumer['idle_timeout']);
         $consumerInstance->setBatchSize($consumer['batch_size']);
         $consumerInstance->setBufferWait($consumer['buffer_wait']);
