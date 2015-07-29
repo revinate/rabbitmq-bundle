@@ -17,7 +17,6 @@ use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Producer\BaseProducer;
 use Revinate\RabbitMqBundle\Queue\Queue;
 use Revinate\RabbitMqBundle\Message\Message;
-use Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -49,8 +48,6 @@ class Consumer {
     protected $batchSize = null;
     /** @var  int If using batchSize, wait for these many ms before flushing buffer */
     protected $bufferWait;
-    /** @var FairnessAlgorithmInterface */
-    protected $fairnessAlgorithm = null;
     /** @var string  */
     protected $messageClass = null;
     /** @var  DecoderInterface */
@@ -392,22 +389,6 @@ class Consumer {
     }
 
     /**
-     * @param \Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface $fairnessAlgorithm
-     */
-    public function setFairnessAlgorithm($fairnessAlgorithm)
-    {
-        $this->fairnessAlgorithm = $fairnessAlgorithm;
-    }
-
-    /**
-     * @return \Revinate\RabbitMqBundle\FairnessAlgorithms\FairnessAlgorithmInterface
-     */
-    public function getFairnessAlgorithm()
-    {
-        return $this->fairnessAlgorithm;
-    }
-
-    /**
      * @param string $messageClass
      */
     public function setMessageClass($messageClass)
@@ -421,14 +402,6 @@ class Consumer {
     public function getMessageClass()
     {
         return $this->messageClass;
-    }
-
-    /**
-     * @param Message $message
-     * @return bool
-     */
-    public function isFairPublishMessage(Message $message) {
-        return !is_null($message->getFairnessKey());
     }
 
     /**

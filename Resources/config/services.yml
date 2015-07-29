@@ -13,9 +13,6 @@ services:
     revinate.rabbit_mq.services:
         class: Revinate\RabbitMqBundle\Config\Services
 
-    revinate.rabbit_mq.fairness_algorithm.not_consecutive:
-        class: Revinate\RabbitMqBundle\FairnessAlgorithms\NotConsecutiveFairnessAlgorithm
-
     revinate.rabbit_mq.encoder.json:
         class: Revinate\RabbitMqBundle\Encoder\JsonEncoder
     revinate.rabbit_mq.encoder.serialize:

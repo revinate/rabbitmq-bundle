@@ -47,22 +47,15 @@ abstract class BaseMessageProcessor {
             $messages[] = $message;
         }
         $firstMessage = $messages[0];
-        $fairnessAlgorithm = $this->consumer->getFairnessAlgorithm();
-        $isFairPublishMessage = $this->consumer->isFairPublishMessage($firstMessage);
         try {
             $isException = false;
-            if (!$isFairPublishMessage || $fairnessAlgorithm->isFairToProcess($firstMessage)) {
-                $this->setCallbackContainer();
-                $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
-                $queue = $firstMessage->getQueue();
-                // In case of BatchConsumer, $processFlag must be an array
-                $processFlag = call_user_func_array($this->consumer->getCallback($queue), array($messageParam));
-                foreach ($messages as $message) {
-                    $message->setProcessedAt(new \DateTime('now'));
-                }
-            } else {
-                error_log("Event Requeued due to unfairness. Key: " . $firstMessage->getFairnessKey());
-                $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
+            $this->setCallbackContainer();
+            $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
+            $queue = $firstMessage->getQueue();
+            // In case of BatchConsumer, $processFlag must be an array
+            $processFlag = call_user_func_array($this->consumer->getCallback($queue), array($messageParam));
+            foreach ($messages as $message) {
+                $message->setProcessedAt(new \DateTime('now'));
             }
         } catch (RejectRequeueException $e) {
             // error_log("Event Requeued due to processing error: " . $e->getMessage());
@@ -76,9 +69,6 @@ abstract class BaseMessageProcessor {
             // error_log("Event Dropped due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT;
             $isException = true;
-        }
-        if ($isFairPublishMessage) {
-            $fairnessAlgorithm->onMessageProcessed($firstMessage);
         }
         $processFlagOrFlags = $this->getSingleOrMultipleProcessFlags($processFlag, count($messages), $isException);
         // Ack or Nack Messages

@@ -186,9 +186,6 @@ class ServiceContainer {
         $consumerInstance->setBufferWait($consumer['buffer_wait']);
         $consumerInstance->setMessageClass($consumer['message_class']);
         $consumerInstance->setDecoder(new $consumer['decoder']);
-        if (isset($consumer['fairness_algorithm'])) {
-            $consumerInstance->setFairnessAlgorithm(new $consumer['fairness_algorithm']);
-        }
         if (isset($consumer['batch_size'])) {
             $consumer['qos_options'] = isset($consumer['qos_options']) ? $consumer['qos_options'] :
                 array('prefetch_size' => 0, 'prefetch_count' => 0, 'global' => false);
