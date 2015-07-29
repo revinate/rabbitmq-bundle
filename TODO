@@ -1,3 +1,2 @@
 - Logging
-- Decouple Fairness code a bit
 - Set service definition in Services class so that we don't load connections all the time

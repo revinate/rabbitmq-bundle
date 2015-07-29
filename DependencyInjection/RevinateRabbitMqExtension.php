@@ -169,9 +169,6 @@ class RevinateRabbitMqExtension extends Extension
             $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
             $definition->addMethodCall('setBufferWait', array($consumer['buffer_wait']));
             $definition->addMethodCall('setDecoder', array(new Reference($consumer['decoder'])));
-            if (isset($consumer['fairness_algorithm'])) {
-                $definition->addMethodCall('setFairnessAlgorithm', array(new Reference($consumer['fairness_algorithm'])));
-            }
 
             $defaultQosOptions =  array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
             $consumer['qos_options'] = isset($consumer['qos_options']) ? array_replace($defaultQosOptions, $consumer['qos_options']) : $defaultQosOptions;

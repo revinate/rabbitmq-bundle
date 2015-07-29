@@ -161,7 +161,6 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('idle_timeout')->defaultValue(0)->end()
                             ->scalarNode('message_class')->defaultValue(null)->end()
                             ->scalarNode('batch_size')->defaultValue(null)->end()
-                            ->scalarNode('fairness_algorithm')->defaultValue(null)->end()
                             ->scalarNode('buffer_wait')->defaultValue(1000)->end()
                             ->scalarNode('decoder')->defaultValue("revinate.rabbit_mq.decoder.json")->end()
                             ->arrayNode('qos_options')

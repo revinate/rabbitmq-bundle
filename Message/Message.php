@@ -253,34 +253,6 @@ class Message {
     }
 
     /**
-     * @param string $fairnessKey
-     */
-    public function setFairnessKey($fairnessKey) {
-        $this->addHeader('fairnessKey', $fairnessKey);
-    }
-
-    /**
-     * @return string
-     */
-    public function getFairnessKey() {
-        return $this->getHeader('fairnessKey');
-    }
-
-    /**
-     * @param int $delayInMs
-     */
-    public function setUnfairnessDelay($delayInMs) {
-        $this->addHeader('unfairnessDelay', $delayInMs);
-    }
-
-    /**
-     * @return int delay in ms
-     */
-    public function getUnfairnessDelay() {
-        return $this->getHeader('unfairnessDelay');
-    }
-
-    /**
      * @param \Revinate\RabbitMqBundle\Consumer\Consumer $consumer
      */
     public function setConsumer($consumer)
@@ -373,7 +345,6 @@ class Message {
             'routingKey' => $this->getRoutingKey(),
             'originalRoutingKey' => $this->getOriginalRoutingKey(),
             'exchangeName' => $this->getExchangeName(),
-            'fairnessKey' => $this->getFairnessKey(),
             'data' => $this->getData(),
             'createdAt' => $this->getCreatedAt(),
             'dequeuedAt' => $this->getDequeuedAt(),

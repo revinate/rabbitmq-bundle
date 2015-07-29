@@ -11,4 +11,3 @@ Tests:
 - Reading from Multiple queues
 - Consumer with Custom Message Class
 - Consumer QOS options
-- Fair publish ?

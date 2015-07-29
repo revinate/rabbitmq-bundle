@@ -87,20 +87,6 @@ class Producer {
     }
 
     /**
-     * @param $fairnessKey
-     * @param $data
-     * @param $eventName
-     * @param int $delayUnfairMessagesForMs
-     */
-    public function fairPublish($fairnessKey, $data, $eventName, $delayUnfairMessagesForMs = 10000) {
-        $routingKey = $eventName;
-        $message = new Message($data, $routingKey);
-        $message->setFairnessKey($fairnessKey);
-        $message->setUnfairnessDelay($delayUnfairMessagesForMs);
-        $this->basicPublish($message, $routingKey);
-    }
-
-    /**
      * @param Message $message
      * @param $routingKey
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
