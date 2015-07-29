@@ -19,6 +19,10 @@ revinate_rabbit_mq:
         test_one_q: { exchange: test_topic.tx, routing_keys: ['test.one'] }
         test_two_q: { exchange: test_topic.tx, routing_keys: ['test.two'] }
         test_three_q: { exchange: test_topic.tx, routing_keys: ['test.three'] }
+        test_six_q: { exchange: test_topic.tx, routing_keys: ['test.six'] }
+        test_six_another_q: { exchange: test_topic.tx, routing_keys: ['test.six'] }
+        test_seven_q: { exchange: test_topic.tx, routing_keys: ['test.seven'] }
+        test_eight_q: { exchange: test_topic.tx, routing_keys: ['test.eight'] }
         test_four_q: { exchange: test_topic.tx, routing_keys: ['#'] }
         test_five_q: { exchange: test_topic.tx, routing_keys: ['test.*'] }
         test_direct_q: { exchange: test_direct.tx, routing_keys: ['test.direct'] }
@@ -38,7 +42,7 @@ revinate_rabbit_mq:
         test_two: { queue: test_two_q, callback: test.two.consumer, idle_timeout: 1, batch_size: 10, buffer_wait: 100000 }
         test_three: { queue: test_three_q, callback: test.three.consumer, idle_timeout: 1, message_class: Revinate\RabbitMqBundle\Test\Message\CustomMessage }
         test_string_decoder: { queue: test_one_q, callback: test.one.consumer, idle_timeout: 1, decoder: revinate.rabbit_mq.decoder.string }
-        test_php_object_decoder: { queue: test_one_q, callback: test.one.consumer, idle_timeout: 1, decoder: revinate.rabbit_mq.decoder.serialize }
+        test_php_object_decoder: { queue: test_seven_q, callback: test.one.consumer, idle_timeout: 1, decoder: revinate.rabbit_mq.decoder.serialize }
         test_all_messages: { queue: test_four_q, callback: test.one.consumer, idle_timeout: 1 }
         test_all_messages_with_pattern: { queue: test_five_q, callback: test.one.consumer, idle_timeout: 1 }
         test_direct: { queue: test_direct_q, callback: test.one.consumer, idle_timeout: 1  }
@@ -46,10 +50,12 @@ revinate_rabbit_mq:
         test_two_fanout: { queue: test_two_fanout_q, callback: test.one.consumer, idle_timeout: 1  }
         test_multiple_consumers: { queues: [test_one_q, test_three_q], callbacks: [test.one.consumer, test.three.consumer], idle_timeout: 1 }
         test_exception_consumer: { queue: test_three_q, callback: test.exception.consumer, idle_timeout: 1, batch_size: 10, buffer_wait: 100 }
-        test_republish: { queue: test_one_q, callback: test.republish.consumer, idle_timeout: 1  }
+        test_republish: { queue: test_eight_q, callback: test.republish.consumer, idle_timeout: 1  }
         test_reject: { queue: test_four_q, callback: test.reject.consumer, idle_timeout: 1  }
         test_reject_requeue_stop: { queue: test_three_q, callback: test.reject_requeue_stop.consumer, idle_timeout: 1  }
         test_qos: { queue: test_one_q, callback: test.one.consumer, idle_timeout: 1, qos_options: { prefetch_count: 100 } }
+        test_self_publish: { queue: test_six_q, callback: test.publish_to_self.consumer, idle_timeout: 1 }
+        test_six: { queue: test_six_another_q, callback: test.one.consumer, idle_timeout: 1 }
 
 services:
   test.one.consumer:
@@ -78,4 +84,8 @@ services:
 
   test.reject_requeue_stop.consumer:
       class: Revinate\RabbitMqBundle\Test\Consumer\RejectRequeueStopConsumer
+      arguments: []
+
+  test.publish_to_self.consumer:
+      class: Revinate\RabbitMqBundle\Test\Consumer\PublishToSelfConsumer
       arguments: []

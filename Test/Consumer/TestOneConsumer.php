@@ -6,7 +6,7 @@ use Revinate\RabbitMqBundle\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Message\Message;
 
-class TestOneConsumer implements ConsumerInterface {
+class TestOneConsumer extends BaseConsumer implements ConsumerInterface {
 
     /**
      * @param \Revinate\RabbitMqBundle\Message\Message $message
@@ -17,15 +17,5 @@ class TestOneConsumer implements ConsumerInterface {
         echo "\nRouting Key:" . $message->getRoutingKey();
         echo "\nMessage: " . $this->toString($message->getData());
         return DeliveryResponse::MSG_ACK;
-    }
-
-    protected function toString($data) {
-        if (is_array($data)) {
-            return json_encode($data);
-        }
-        if (is_object($data)) {
-            return serialize($data);
-        }
-        return $data;
     }
 }

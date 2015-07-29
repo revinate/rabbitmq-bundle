@@ -6,7 +6,7 @@ use Revinate\RabbitMqBundle\Consumer\BatchConsumerInterface;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Message\Message;
 
-class TestTwoConsumer implements BatchConsumerInterface {
+class TestTwoConsumer extends BaseConsumer implements BatchConsumerInterface {
 
     /**
      * @param Message[] $messages

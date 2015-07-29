@@ -1,6 +1,7 @@
 <?php
 namespace Revinate\RabbitMqBundle\Test\TestCase;
 
+use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\Producer\Producer;
 use Revinate\RabbitMqBundle\Test\Message\CustomMessage;
 use Revinate\RabbitMqBundle\Test\TestCase\BaseTestCase;
@@ -169,25 +170,30 @@ class ConsumerProducerTest extends BaseTestCase
         $output = $this->consumeMessages("test_reject_requeue_stop", $count);
         $this->assertSame(1, $this->countString($output, "Routing Key:test.three"), $this->debug($output));
     }
-    /**
-     * @TODO: Test Not Working
-     */
-    public function XtestConsumeWithSerializationEncoder() {
+
+    public function testPublishToSelf() {
+        $this->produceMessages(1, "test.six");
+        $output = $this->consumeMessages("test_self_publish", 6);
+        $this->assertSame(6, $this->countString($output, "Routing Key:test.six"), $this->debug($output));
+        $output = $this->consumeMessages("test_six", 2);
+        $this->assertSame(1, $this->countString($output, "Routing Key:test.six"), $this->debug($output));
+    }
+
+    public function testConsumeWithSerializationEncoder() {
         $phpObject = new \stdClass();
         $phpObject->message = "PHP Object Message";
-        $this->produceMessages(1, "test.one", $phpObject, "test_php_object_encoder");
+        $this->produceMessages(1, "test.seven", $phpObject, "test_php_object_encoder");
         $output = $this->consumeMessages("test_php_object_decoder", 1);
-        var_dump($output);
-        //$this->assertTrue($this->has($output, 'O:8:"stdClass":1:{s:7:"message";s:18:"PHP Object Message";}'), $this->debug($output));
+        $this->assertTrue($this->has($output, 'O:8:"stdClass":1:{s:7:"message";s:18:"PHP Object Message";}'), $this->debug($output));
     }
 
     /**
      * @TODO: Test Not Working
      * - Published message goes to the queue but not redelivered to this consumer.
      */
-    public function XtestRepublishConsumer() {
+    public function xtestRepublishConsumer() {
         $count = 1;
-        $this->produceMessages($count, "test.one");
+        $this->produceMessages($count, "test.eight");
         $output = $this->consumeMessages("test_republish", $count*10);
         var_dump($output);
         //$this->assertTrue($count == $this->countString($output, "Routing Key:test.one"), $this->debug($output));

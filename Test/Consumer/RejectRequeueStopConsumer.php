@@ -7,7 +7,7 @@ use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueStopException;
 use Revinate\RabbitMqBundle\Message\Message;
 
-class RejectRequeueStopConsumer implements ConsumerInterface {
+class RejectRequeueStopConsumer extends BaseConsumer implements ConsumerInterface {
 
     /**
      * @param \Revinate\RabbitMqBundle\Message\Message $message
@@ -20,13 +20,4 @@ class RejectRequeueStopConsumer implements ConsumerInterface {
         return DeliveryResponse::MSG_REJECT_REQUEUE_STOP;
     }
 
-    protected function toString($data) {
-        if (is_array($data)) {
-            return json_encode($data);
-        }
-        if (is_object($data)) {
-            return serialize($data);
-        }
-        return $data;
-    }
 }
