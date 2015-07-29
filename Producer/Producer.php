@@ -88,10 +88,32 @@ class Producer {
 
     /**
      * @param Message $message
+     * @throws InvalidExchangeConfigurationException
+     */
+    public function publishToSelf(Message $message) {
+        $channel = $message->getQueue()->getChannel();
+        $amqpMessage = $this->prepareAMQPMessage($message);
+        $channel->basic_publish($amqpMessage, "", $message->getQueue()->getName());
+    }
+
+    /**
+     * @param Message $message
      * @param $routingKey
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     protected function basicPublish(Message $message, $routingKey) {
+        $amqpMessage = $this->prepareAMQPMessage($message);
+        if (empty($this->exchange)) {
+            throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to specify exchange for this producer.");
+        }
+        $this->channel->basic_publish($amqpMessage, $this->getExchange()->getName(), $routingKey);
+    }
+
+    /**
+     * @param Message $message
+     * @return AMQPMessage
+     */
+    protected function prepareAMQPMessage(Message $message) {
         if (! $this->encoder) {
             // Use Default Encoder
             $this->encoder = new JsonEncoder();
@@ -103,11 +125,6 @@ class Producer {
             Message::APPLICATION_HEADERS_PROPERTY => $message->getHeaders(),
             Message::EXPIRATION_PROPERTY => $message->getExpiration()
         );
-        $msg = new AMQPMessage($encodedMessage, $properties);
-        if (empty($this->exchange)) {
-            throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to speficify exchange for this producer.");
-        }
-        $this->channel->basic_publish($msg, $this->getExchange()->getName(), $routingKey);
+        return new AMQPMessage($encodedMessage, $properties);
     }
-
 }

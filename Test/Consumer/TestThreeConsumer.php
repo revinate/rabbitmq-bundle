@@ -6,7 +6,7 @@ use Revinate\RabbitMqBundle\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Message\Message;
 
-class TestThreeConsumer implements ConsumerInterface {
+class TestThreeConsumer extends BaseConsumer implements ConsumerInterface {
 
     /**
      * @param \Revinate\RabbitMqBundle\Message\Message $message

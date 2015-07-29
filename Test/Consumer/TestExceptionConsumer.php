@@ -7,7 +7,7 @@ use Revinate\RabbitMqBundle\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Message\Message;
 
-class TestExceptionConsumer implements BatchConsumerInterface {
+class TestExceptionConsumer extends BaseConsumer implements BatchConsumerInterface {
 
     /**
      * @param \Revinate\RabbitMqBundle\Message\Message[] $messages
@@ -28,15 +28,5 @@ class TestExceptionConsumer implements BatchConsumerInterface {
             $status[] = DeliveryResponse::MSG_ACK;
         }
         return $status;
-    }
-
-    protected function toString($data) {
-        if (is_array($data)) {
-            return json_encode($data);
-        }
-        if (is_object($data)) {
-            return serialize($data);
-        }
-        return $data;
     }
 }

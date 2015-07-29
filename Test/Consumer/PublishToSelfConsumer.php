@@ -4,13 +4,12 @@ namespace Revinate\RabbitMqBundle\Test\Consumer;
 
 use Revinate\RabbitMqBundle\Consumer\ConsumerInterface;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
-use Revinate\RabbitMqBundle\Encoder\JsonEncoder;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\Producer\BaseProducer;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class RepublishConsumer extends BaseConsumer implements ConsumerInterface {
+class PublishToSelfConsumer extends BaseConsumer implements ConsumerInterface, ContainerAwareInterface {
 
     /**
      * @param \Revinate\RabbitMqBundle\Message\Message $message
@@ -18,12 +17,16 @@ class RepublishConsumer extends BaseConsumer implements ConsumerInterface {
      */
     public function execute(Message $message)
     {
-        echo "\nRouting Key:" . $message->getRoutingKey();
-        echo "\nMessage: " . $message->getData();
-        echo "\nRetry count: " . $message->getRetryCount();
         /** @var BaseProducer $producer */
         $producer = $this->container->get("revinate.rabbit_mq.base_producer");
-        $producer->rePublishForAll($message);
+        echo "\nRouting Key:" . $message->getRoutingKey();
+        echo "\nMessage: " . $this->toString($message->getData());
+        echo "\nRetry count: " . $message->getRetryCount();
+        if ($message->getRetryCount() < 5) {
+            $message->incrementRetryCount();
+            $producer->publishToSelf($message);
+        }
         return DeliveryResponse::MSG_ACK;
     }
+
 }
