@@ -50,7 +50,7 @@ class Exchange {
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     function __construct($name, $connection, $type, $passive, $durable, $autoDelete, $internal, $noWait, $arguments, $ticket, $managed) {
-        if (empty($name) || empty($type)) {
+        if (is_null($name) || is_null($type)) {
             throw new InvalidExchangeConfigurationException("Please specify Exchange name and type to declare an exchange.");
         }
         $this->connection = $connection;

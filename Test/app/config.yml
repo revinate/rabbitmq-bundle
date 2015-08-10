@@ -28,6 +28,7 @@ revinate_rabbit_mq:
         test_direct_q: { exchange: test_direct.tx, routing_keys: ['test.direct'] }
         test_one_fanout_q: { exchange: test_fanout.tx }
         test_two_fanout_q: { exchange: test_fanout.tx }
+        test_rpc_server_q: { exchange: test_topic.tx, routing_keys: ['rpc.message'] }
 
     producers:
         test_producer: { exchange: test_topic.tx }
@@ -56,6 +57,7 @@ revinate_rabbit_mq:
         test_qos: { queue: test_one_q, callback: test.one.consumer, idle_timeout: 1, qos_options: { prefetch_count: 100 } }
         test_self_publish: { queue: test_six_q, callback: test.publish_to_self.consumer, idle_timeout: 1 }
         test_six: { queue: test_six_another_q, callback: test.one.consumer, idle_timeout: 1 }
+        test_rpc_server: { queue: test_rpc_server_q, callback: test.rpc.server , idle_timeout: 1}
 
 services:
   test.one.consumer:
@@ -89,3 +91,7 @@ services:
   test.publish_to_self.consumer:
       class: Revinate\RabbitMqBundle\Test\Consumer\PublishToSelfConsumer
       arguments: []
+
+  test.rpc.server:
+        class: Revinate\RabbitMqBundle\Test\Consumer\RpcServer
+        arguments: []

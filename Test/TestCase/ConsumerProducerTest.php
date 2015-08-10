@@ -1,6 +1,7 @@
 <?php
 namespace Revinate\RabbitMqBundle\Test\TestCase;
 
+use Revinate\RabbitMqBundle\Consumer\RPCConsumer;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\Producer\Producer;
 use Revinate\RabbitMqBundle\Test\Message\CustomMessage;
@@ -197,5 +198,20 @@ class ConsumerProducerTest extends BaseTestCase
         $output = $this->consumeMessages("test_republish", $count*10);
         var_dump($output);
         //$this->assertTrue($count == $this->countString($output, "Routing Key:test.one"), $this->debug($output));
+    }
+
+    public function testRPCPublisherConsumer() {
+        /** @var Producer $producer */
+        $producer = $this->getContainer()->get("revinate_rabbit_mq.producer.test_producer");
+        $connection = $this->getContainer()->get("revinate_rabbit_mq.connection.test");
+        $rpcConsumer = new RPCConsumer($producer, $connection);
+        // Client Request
+        $queue = $rpcConsumer->call("RPC Message", "rpc.message");
+        // Server Reply
+        $this->consumeMessages("test_rpc_server", 1);
+        // Client Consume
+        $rpcConsumer->consume($queue, 5, function(Message $message) {
+            $this->assertSame("rpc.message", $message->getRoutingKey());
+        });
     }
 }

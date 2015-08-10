@@ -62,7 +62,6 @@ class Consumer {
      * @param $name
      * @param Queue[] $queues
      * @throws \BadFunctionCallException
-     * @internal param \Revinate\RabbitMqBundle\Queue\Queue[] $queue
      */
     public function __construct(ContainerInterface $container = null, $name, Array $queues) {
         $this->container = $container;
