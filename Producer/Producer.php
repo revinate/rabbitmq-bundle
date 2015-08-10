@@ -23,6 +23,8 @@ class Producer {
     protected $encoder;
     /** @var \PhpAmqpLib\Channel\AMQPChannel */
     protected $channel;
+    /** @var  AMQPConnection */
+    protected $connection;
 
     /**
      * @param $name
@@ -33,6 +35,7 @@ class Producer {
         $this->exchange = $exchange;
         if ($exchange) {
             $this->channel = $this->getExchange()->getConnection()->channel();
+            $this->connection = $this->getExchange()->getConnection();
         }
     }
 
@@ -41,6 +44,13 @@ class Producer {
      */
     public function getExchange() {
         return $this->exchange;
+    }
+
+    /**
+     * @return AMQPConnection
+     */
+    public function getConnection() {
+        return $this->connection;
     }
 
     /**
