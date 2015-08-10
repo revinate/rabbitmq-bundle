@@ -21,6 +21,7 @@ class Message {
     const DELIVERY_MODE_PROPERTY = 'delivery_mode';
     const APPLICATION_HEADERS_PROPERTY = 'application_headers';
     const EXPIRATION_PROPERTY = 'expiration';
+    const REPLY_TO = 'reply_to';
 
     // Add way a deadlettered message that has older queue name
     /** @var  string */
@@ -29,6 +30,8 @@ class Message {
     protected $deliveryMode = 2;
     /** @var  int */
     protected $expiration;
+    /** @var  string */
+    protected $replyTo;
     /** @var  array|string|int */
     protected $data;
     /** @var Consumer */
@@ -335,6 +338,28 @@ class Message {
         return $this->amqpMessage ? $this->amqpMessage->delivery_info['exchange'] : null;
     }
 
+    /**
+     * @return string
+     */
+    public function getReplyTo()
+    {
+        if ($this->replyTo) {
+            return $this->replyTo;
+        }
+        if ($this->amqpMessage) {
+            $properties = $this->amqpMessage->get_properties();
+            return isset($properties['reply_to']) ? $properties['reply_to'] : null;
+        }
+        return null;
+    }
+
+    /**
+     * @param string $replyTo
+     */
+    public function setReplyTo($replyTo)
+    {
+        $this->replyTo = $replyTo;
+    }
 
     /**
      * @return string
@@ -352,6 +377,7 @@ class Message {
             'processTime' => $this->getProcessTime(),
             'dequeueDelay' => $this->getDequeueDelay(),
             'retryCount' => $this->getRetryCount(),
+            'replyTo' => $this->getReplyTo()
         ));
     }
 }

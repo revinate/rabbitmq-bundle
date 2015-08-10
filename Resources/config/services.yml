@@ -5,10 +5,14 @@ parameters:
     revinate_rabbit_mq.exchange.class: Revinate\RabbitMqBundle\Exchange\Exchange
     revinate_rabbit_mq.producer.class: Revinate\RabbitMqBundle\Producer\Producer
     revinate_rabbit_mq.consumer.class: Revinate\RabbitMqBundle\Consumer\Consumer
+    revinate_rabbit_mq.rpc_consumer.class: Revinate\RabbitMqBundle\Consumer\RPCConsumer
 
 services:
     revinate.rabbit_mq.base_producer:
         class: Revinate\RabbitMqBundle\Producer\BaseProducer
+
+    revinate.rabbit_mq.default_exchange_producer:
+        class: Revinate\RabbitMqBundle\Producer\DefaultExchangeProducer
 
     revinate.rabbit_mq.services:
         class: Revinate\RabbitMqBundle\Config\Services

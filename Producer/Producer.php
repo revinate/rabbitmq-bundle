@@ -68,6 +68,14 @@ class Producer {
     }
 
     /**
+     * @return \PhpAmqpLib\Channel\AMQPChannel
+     */
+    public function getChannel()
+    {
+        return $this->channel;
+    }
+
+    /**
      * @param string|array|Message $data
      * @param string $routingKey
      */
@@ -125,6 +133,9 @@ class Producer {
             Message::APPLICATION_HEADERS_PROPERTY => $message->getHeaders(),
             Message::EXPIRATION_PROPERTY => $message->getExpiration()
         );
+        if ($message->getReplyTo()) {
+            $properties[Message::REPLY_TO] = $message->getReplyTo();
+        }
         return new AMQPMessage($encodedMessage, $properties);
     }
 }

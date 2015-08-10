@@ -43,16 +43,16 @@ class Queue {
      * @param \Revinate\RabbitMqBundle\Exchange\Exchange $exchange
      * @param $passive
      * @param $durable
-     * @param $exlusive
+     * @param $exclusive
      * @param $autoDelete
      * @param $noWait
      * @param $arguments
-     * @param $routingKeys
+     * @param array() $routingKeys
      * @param $ticket
      * @param $managed
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidQueueConfigurationException
      */
-    public function __construct($name, Exchange $exchange, $passive, $durable, $exlusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket, $managed) {
+    public function __construct($name, Exchange $exchange, $passive, $durable, $exclusive, $autoDelete, $noWait, $arguments, $routingKeys, $ticket, $managed) {
         if (empty($name) || empty($exchange)) {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
@@ -62,7 +62,7 @@ class Queue {
         $this->name = $name;
         $this->passive = $passive;
         $this->durable = $durable;
-        $this->exclusive = $exlusive;
+        $this->exclusive = $exclusive;
         $this->autoDelete = $autoDelete;
         $this->noWait = $noWait;
         $this->arguments = $arguments;
