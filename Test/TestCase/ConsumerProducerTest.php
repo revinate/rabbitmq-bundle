@@ -203,8 +203,7 @@ class ConsumerProducerTest extends BaseTestCase
     public function testRPCPublisherConsumer() {
         /** @var Producer $producer */
         $producer = $this->getContainer()->get("revinate_rabbit_mq.producer.test_producer");
-        $connection = $this->getContainer()->get("revinate_rabbit_mq.connection.test");
-        $rpcConsumer = new RPCConsumer($producer, $connection);
+        $rpcConsumer = new RPCConsumer($producer);
         // Client Request
         $queue = $rpcConsumer->call("RPC Message", "rpc.message");
         // Server Reply

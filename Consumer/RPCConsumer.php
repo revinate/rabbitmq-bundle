@@ -18,17 +18,15 @@ class RPCConsumer {
     protected $channel;
     /** @var AMQPConnection  */
     protected $connection;
-
     /** @var string */
     protected $queueName;
 
     /**
      * @param Producer $producer
-     * @param AMQPConnection $connection
      */
-    public function __construct(Producer $producer, AMQPConnection $connection) {
+    public function __construct(Producer $producer) {
         $this->producer = $producer;
-        $this->connection = $connection;
+        $this->connection = $this->producer->getConnection();
     }
 
     /**
