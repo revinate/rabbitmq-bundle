@@ -53,14 +53,14 @@ class Message {
      */
     public function __construct($data, $routingKey, $headers = array()) {
         $this->data = $data;
-        $this->setRoutingKey($routingKey);
-        $this->setOriginalRoutingKey($routingKey);
-        $this->setCreatedAt(new \DateTime('now'));
         if (!empty($headers)) {
             $this->setHeaders($headers);
         } else {
             $this->addHeader('id', TextHelper::getRandomString(16));
         }
+        $this->setRoutingKey($routingKey);
+        $this->setOriginalRoutingKey($routingKey);
+        $this->setCreatedAt(new \DateTime('now'));
     }
 
     /**
