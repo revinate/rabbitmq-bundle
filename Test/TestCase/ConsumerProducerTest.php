@@ -175,9 +175,9 @@ class ConsumerProducerTest extends BaseTestCase
     public function testPublishToSelf() {
         $this->produceMessages(1, "test.six");
         $output = $this->consumeMessages("test_self_publish", 6);
-        $this->assertSame(6, $this->countString($output, "Routing Key:test.six"), $this->debug($output));
-        $output = $this->consumeMessages("test_six", 2);
         $this->assertSame(1, $this->countString($output, "Routing Key:test.six"), $this->debug($output));
+        // Self published messages
+        $this->assertSame(5, $this->countString($output, "Routing Key:test_six_q"), $this->debug($output));
     }
 
     public function testConsumeWithSerializationEncoder() {
@@ -186,6 +186,20 @@ class ConsumerProducerTest extends BaseTestCase
         $this->produceMessages(1, "test.seven", $phpObject, "test_php_object_encoder");
         $output = $this->consumeMessages("test_php_object_decoder", 1);
         $this->assertTrue($this->has($output, 'O:8:"stdClass":1:{s:7:"message";s:18:"PHP Object Message";}'), $this->debug($output));
+    }
+
+    public function testRPCPublisherConsumer() {
+        /** @var Producer $producer */
+        $producer = $this->getContainer()->get("revinate_rabbit_mq.producer.test_producer");
+        $rpcConsumer = new RPCConsumer($producer);
+        // Client Request
+        $queue = $rpcConsumer->call("RPC Message", "rpc.message");
+        // Server Reply
+        $output = $this->consumeMessages("test_rpc_server", 1);
+        // Client Consumegs
+        $rpcConsumer->consume($queue, 5, function(Message $message) use($output) {
+            $this->assertTrue($this->has($message->getRoutingKey(), "rpc_"), $this->debug($output));
+        });
     }
 
     /**
@@ -198,19 +212,5 @@ class ConsumerProducerTest extends BaseTestCase
         $output = $this->consumeMessages("test_republish", $count*10);
         var_dump($output);
         //$this->assertTrue($count == $this->countString($output, "Routing Key:test.one"), $this->debug($output));
-    }
-
-    public function testRPCPublisherConsumer() {
-        /** @var Producer $producer */
-        $producer = $this->getContainer()->get("revinate_rabbit_mq.producer.test_producer");
-        $rpcConsumer = new RPCConsumer($producer);
-        // Client Request
-        $queue = $rpcConsumer->call("RPC Message", "rpc.message");
-        // Server Reply
-        $this->consumeMessages("test_rpc_server", 1);
-        // Client Consume
-        $rpcConsumer->consume($queue, 5, function(Message $message) {
-            $this->assertSame("rpc.message", $message->getRoutingKey());
-        });
     }
 }
