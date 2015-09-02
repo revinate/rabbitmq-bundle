@@ -186,14 +186,10 @@ class ServiceContainer {
         $consumerInstance->setBufferWait($consumer['buffer_wait']);
         $consumerInstance->setMessageClass($consumer['message_class']);
         $consumerInstance->setDecoder(new $consumer['decoder']);
-        if (isset($consumer['batch_size'])) {
-            $consumer['qos_options'] = isset($consumer['qos_options']) ? $consumer['qos_options'] :
-                array('prefetch_size' => 0, 'prefetch_count' => 0, 'global' => false);
-            $consumer['qos_options'] = array_replace($consumer['qos_options'], array('prefetch_count' => $consumer['batch_size']));
-        }
-        if (array_key_exists('qos_options', $consumer)) {
-            $consumerInstance->setQosOptions($consumer['qos_options']);
-        }
+
+        $defaultQosOptions =  array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
+        $consumer['qos_options'] = isset($consumer['qos_options']) ? array_replace($defaultQosOptions, $consumer['qos_options']) : $defaultQosOptions;
+        $consumerInstance->setQosOptions($consumer['qos_options']);
         return $consumerInstance;
     }
 
