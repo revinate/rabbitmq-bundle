@@ -192,11 +192,7 @@ class ServiceContainer {
             $consumer['qos_options'] = array_replace($consumer['qos_options'], array('prefetch_count' => $consumer['batch_size']));
         }
         if (array_key_exists('qos_options', $consumer)) {
-            $consumerInstance->setQosOptions(
-                $consumer['qos_options']['prefetch_size'],
-                $consumer['qos_options']['prefetch_count'],
-                $consumer['qos_options']['global']
-            );
+            $consumerInstance->setQosOptions($consumer['qos_options']);
         }
         return $consumerInstance;
     }
