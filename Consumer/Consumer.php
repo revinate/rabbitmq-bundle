@@ -34,6 +34,8 @@ class Consumer {
     protected $channel;
     /** @var Queue[] */
     protected $queues;
+    /** @var  string[] */
+    protected $queueTags;
     /** @var int  */
     protected $target = 1;
     /** @var array number consumed per queue  */
@@ -110,7 +112,7 @@ class Consumer {
             $messageProcessor = !$this->isBatchConsumer() ? new SingleMessageProcessor($this) : new BatchMessageProcessor($this);
             $messageProcessor->setQueue($queue);
             $this->getChannel()->basic_qos($this->qosOptions['prefetch_size'], $this->getPrefetchCount(), $this->qosOptions['global']);
-            $this->getChannel()->basic_consume($queue->getName(), $this->getConsumerTag($queue), false, false, false, false, array($messageProcessor, 'processMessage'));
+            $this->queueTags[$queue->getName()] = $this->getChannel()->basic_consume($queue->getName(), "", false, false, false, false, array($messageProcessor, 'processMessage'));
         }
         $this->waitForMessages();
     }
@@ -175,7 +177,7 @@ class Consumer {
      * Signal Listener
      * @param int $signo
      */
-    public function stopAllConsumers($signo) {
+    public function stopAllConsumers() {
         foreach ($this->queues as $queue) {
             $this->stopConsuming($queue);
         }
@@ -189,7 +191,7 @@ class Consumer {
         if (isset($this->stoppedQueue[$queue->getName()])) {
             return;
         }
-        $this->getChannel()->basic_cancel($this->getConsumerTag($queue));
+        $this->getChannel()->basic_cancel($this->queueTags[$queue->getName()]);
         $this->stoppedQueue[$queue->getName()] = true;
     }
 
@@ -214,7 +216,7 @@ class Consumer {
         } else if ($processFlag == DeliveryResponse::MSG_REJECT_REQUEUE_STOP) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
-            $this->stopAllConsumers(SIGQUIT);
+            $this->stopAllConsumers();
         } else {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);
@@ -322,15 +324,6 @@ class Consumer {
     public function getSetContainerCallback(Queue $queue)
     {
         return $this->setContainerCallbacks[$queue->getName()];
-    }
-
-    /**
-     * @param Queue $queue
-     * @return string
-     */
-    public function getConsumerTag(Queue $queue)
-    {
-        return sprintf("PHPPROCESS_%s_%s_%s", gethostname(), getmypid(), $queue->getName());
     }
 
     /**
