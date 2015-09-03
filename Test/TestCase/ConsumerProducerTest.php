@@ -1,6 +1,7 @@
 <?php
 namespace Revinate\RabbitMqBundle\Test\TestCase;
 
+use PhpAmqpLib\Exception\AMQPTimeoutException;
 use Revinate\RabbitMqBundle\Consumer\RPCConsumer;
 use Revinate\RabbitMqBundle\Message\Message;
 use Revinate\RabbitMqBundle\Producer\Producer;
@@ -167,9 +168,9 @@ class ConsumerProducerTest extends BaseTestCase
 
     public function testRejectRequeueStopConsumer() {
         $count = 2;
-        $this->produceMessages($count, "test.three");
+        $this->produceMessages($count, "test.zero");
         $output = $this->consumeMessages("test_reject_requeue_stop", $count);
-        $this->assertSame(1, $this->countString($output, "Routing Key:test.three"), $this->debug($output));
+        $this->assertSame(1, $this->countString($output, "Routing Key:test.zero"), $this->debug($output));
     }
 
     public function testPublishToSelf() {
@@ -212,5 +213,29 @@ class ConsumerProducerTest extends BaseTestCase
         $output = $this->consumeMessages("test_republish", $count*10);
         var_dump($output);
         //$this->assertTrue($count == $this->countString($output, "Routing Key:test.one"), $this->debug($output));
+    }
+
+    /**
+     * @TODO: This functionality doesn't work yet
+     * Testing Multiple consumer instances
+     */
+    public function xtestCustomConsumer() {
+        $this->produceMessages(3, "test.one");
+        $consumerService = "revinate_rabbit_mq.consumer.test_one";
+        for ($i = 0; $i < 3; $i++) {
+            //ob_start();
+            /** @var \Revinate\RabbitMqBundle\Consumer\Consumer $consumer */
+            $consumer = $this->getContainer()->get($consumerService);
+            try {
+                $consumer->consume(1);
+            } catch (AMQPTimeoutException $e) {
+//                $consumer->stopAllConsumers(1);
+                echo "timeout!";
+//                $this->assertSame(1, $this->countString($output, "Routing Key:test.one"), $this->debug($output));
+            }
+//            $output = ob_get_clean();
+//            var_dump($output);
+            sleep(2);
+        }
     }
 }

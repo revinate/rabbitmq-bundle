@@ -53,7 +53,7 @@ revinate_rabbit_mq:
         test_exception_consumer: { queue: test_three_q, callback: test.exception.consumer, idle_timeout: 1, batch_size: 10, buffer_wait: 100 }
         test_republish: { queue: test_eight_q, callback: test.republish.consumer, idle_timeout: 1  }
         test_reject: { queue: test_four_q, callback: test.reject.consumer, idle_timeout: 1  }
-        test_reject_requeue_stop: { queue: test_three_q, callback: test.reject_requeue_stop.consumer, idle_timeout: 1  }
+        test_reject_requeue_stop: { queue: test_zero_q, callback: test.reject_requeue_stop.consumer, idle_timeout: 1  }
         test_qos: { queue: test_one_q, callback: test.one.consumer, idle_timeout: 1, qos_options: { prefetch_count: 100 } }
         test_self_publish: { queue: test_six_q, callback: test.publish_to_self.consumer, idle_timeout: 1 }
         test_six: { queue: test_six_another_q, callback: test.one.consumer, idle_timeout: 1 }
