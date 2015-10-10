@@ -404,7 +404,7 @@ class Consumer {
         $routingKey = $amqpMessage->delivery_info['routing_key'];
         $properties = $amqpMessage->get_properties();
         /** @var AMQPTable|Array $headers */
-        $headers = $properties['application_headers'];
+        $headers = isset($properties['application_headers']) ? $properties['application_headers'] : array();
         $headers = $headers instanceof AMQPTable ? $headers->getNativeData() : $headers;
         $decodedData = $this->decoder->decode($amqpMessage->body);
         if ($this->getMessageClass()) {
