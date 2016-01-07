@@ -53,13 +53,22 @@ class RevinateRabbitMqExtension extends Extension
                 $connection['lazy']
                     ? '%revinate_rabbit_mq.lazy.connection.class%'
                     : '%revinate_rabbit_mq.connection.class%';
-
+            //@see PhpAmqpLib\Connection\AMQPStreamConnection::__construct()
             $definition = new Definition($classParam, array(
                 $connection['host'],
                 $connection['port'],
                 $connection['user'],
                 $connection['password'],
-                $connection['vhost']
+                $connection['vhost'],
+                false,
+                "AMQPLAIN",
+                null,
+                "en_US",
+                3,
+                3,
+                null,
+                false,
+                60
             ));
             $definition->setLazy(true);
 
