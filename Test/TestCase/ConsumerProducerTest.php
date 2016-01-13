@@ -40,7 +40,7 @@ class ConsumerProducerTest extends BaseTestCase
         $this->create();
     }
 
-    protected function teardown() {
+    protected function tearDown() {
         $this->clear();
     }
 

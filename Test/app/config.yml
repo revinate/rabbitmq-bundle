@@ -93,5 +93,5 @@ services:
       arguments: []
 
   test.rpc.server:
-        class: Revinate\RabbitMqBundle\Test\Consumer\RpcServer
-        arguments: []
+      class: Revinate\RabbitMqBundle\Test\Consumer\RpcServer
+      arguments: []
