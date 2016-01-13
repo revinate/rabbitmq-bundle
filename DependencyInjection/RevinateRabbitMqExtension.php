@@ -129,10 +129,18 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadProducers() {
         foreach ($this->config['producers'] as $key => $producer) {
-            $definition = new Definition('%revinate_rabbit_mq.producer.class%', array(
-                $key,
-                $this->getExchange($producer['exchange']),
-            ));
+            if ($this->container->hasParameter('revinate_rabbit_mq.enable_mock_producer')
+                && $this->container->getParameter('revinate_rabbit_mq.enable_mock_producer')) {
+                $definition = new Definition('%revinate_rabbit_mq.mock_producer.class%', array(
+                    $key
+                ));
+            } else {
+                $definition = new Definition('%revinate_rabbit_mq.producer.class%', array(
+                    $key,
+                    $this->getExchange($producer['exchange'])
+                ));
+            }
+
             $definition->setLazy(true);
             $definition->addMethodCall('setEncoder', array(new Reference($producer['encoder'])));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.producer.%s', $key), $definition);
