@@ -68,7 +68,7 @@ class RevinateRabbitMqExtension extends Extension
                 3,
                 null,
                 false,
-                60
+                600
             ));
             $definition->setLazy(true);
 
