@@ -12,7 +12,6 @@ use Revinate\RabbitMqBundle\Queue\Queue;
 /**
  * Class Message
  * @package Revinate\RabbitMqBundle\Message
- * @TODO: Add support for original event id
  * @TODO: Add Type
  * @TODO: Way to convert entity into message
  */
@@ -42,7 +41,6 @@ class Message {
     protected $amqpMessage;
     /** @var  string */
     protected $originalRoutingKey;
-
     /** @var array message headers */
     protected $headers = array();
 
@@ -364,6 +362,21 @@ class Message {
     /**
      * @return string
      */
+    public function getOriginalEventId()
+    {
+        return $this->getHeader('originalEventId');
+    }
+
+    /**
+     * @param string $originalEventId
+     */
+    public function setOriginalEventId($originalEventId) {
+        $this->addHeader('originalEventId', $originalEventId);
+    }
+
+    /**
+     * @return string
+     */
     public function __toString() {
         return json_encode(array(
             'id' => $this->getId(),
@@ -377,7 +390,8 @@ class Message {
             'processTime' => $this->getProcessTime(),
             'dequeueDelay' => $this->getDequeueDelay(),
             'retryCount' => $this->getRetryCount(),
-            'replyTo' => $this->getReplyTo()
+            'replyTo' => $this->getReplyTo(),
+            'originalEventId' => $this->getOriginalEventId()
         ));
     }
 }
