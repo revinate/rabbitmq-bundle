@@ -124,6 +124,9 @@ class Producer {
         if (empty($this->exchange)) {
             throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to specify exchange for this producer.");
         }
+        if (! $this->getConnection()->isConnected()) {
+            $this->getConnection()->reconnect();
+        };
         $this->channel->basic_publish($amqpMessage, $this->getExchange()->getName(), $routingKey);
     }
 
