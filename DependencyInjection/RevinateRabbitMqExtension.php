@@ -59,16 +59,7 @@ class RevinateRabbitMqExtension extends Extension
                 $connection['port'],
                 $connection['user'],
                 $connection['password'],
-                $connection['vhost'],
-                false,
-                "AMQPLAIN",
-                null,
-                "en_US",
-                3,
-                3,
-                null,
-                false,
-                600
+                $connection['vhost']
             ));
             $definition->setLazy(true);
 
