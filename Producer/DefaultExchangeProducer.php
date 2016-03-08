@@ -30,7 +30,7 @@ class DefaultExchangeProducer extends Producer {
      * @param string $routingKey
      */
     public function publishToDefaultExchange(Message $message, $routingKey) {
-        $amqpMessage = $this->prepareAMQPMessage($message);
+        $amqpMessage = $this->encodeAndGetAMQPMessage($message);
         $this->channel->basic_publish($amqpMessage, "", $routingKey);
     }
 }

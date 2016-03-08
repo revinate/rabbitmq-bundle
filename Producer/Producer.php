@@ -4,6 +4,7 @@ namespace Revinate\RabbitMqBundle\Producer;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Revinate\RabbitMqBundle\Encoder\DecoderInterface;
+use Revinate\RabbitMqBundle\Encoder\EncoderHelper;
 use Revinate\RabbitMqBundle\Encoder\EncoderInterface;
 use Revinate\RabbitMqBundle\Encoder\JsonEncoder;
 use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
@@ -110,7 +111,7 @@ class Producer {
      */
     public function publishToSelf(Message $message) {
         $channel = $message->getQueue()->getChannel();
-        $amqpMessage = $this->prepareAMQPMessage($message);
+        $amqpMessage = $this->encodeAndGetAMQPMessage($message);
         $channel->basic_publish($amqpMessage, "", $message->getQueue()->getName());
     }
 
@@ -120,7 +121,7 @@ class Producer {
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
     protected function basicPublish(Message $message, $routingKey) {
-        $amqpMessage = $this->prepareAMQPMessage($message);
+        $amqpMessage = $this->encodeAndGetAMQPMessage($message);
         if (empty($this->exchange)) {
             throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to specify exchange for this producer.");
         }
@@ -131,12 +132,20 @@ class Producer {
      * @param Message $message
      * @return AMQPMessage
      */
-    protected function prepareAMQPMessage(Message $message) {
+    protected function encodeAndGetAMQPMessage(Message $message) {
         if (! $this->encoder) {
             // Use Default Encoder
-            $this->encoder = new JsonEncoder();
+            $this->encoder = EncoderHelper::getDefaultEncoder();
         }
         $encodedMessage = $this->encoder->encode($message->getData());
+        return new AMQPMessage($encodedMessage, self::getAMQPProperties($message));
+    }
+
+    /**
+     * @param Message $message
+     * @return array
+     */
+    public static function getAMQPProperties(Message $message) {
         $properties = array(
             Message::CONTENT_TYPE_PROPERTY => $message->getContentType(),
             Message::DELIVERY_MODE_PROPERTY => $message->getDeliveryMode(),
@@ -146,6 +155,6 @@ class Producer {
         if ($message->getReplyTo()) {
             $properties[Message::REPLY_TO] = $message->getReplyTo();
         }
-        return new AMQPMessage($encodedMessage, $properties);
+        return $properties;
     }
 }

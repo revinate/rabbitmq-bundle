@@ -238,4 +238,18 @@ class ConsumerProducerTest extends BaseTestCase
             sleep(2);
         }
     }
+
+    public function testDeadletterMessageFromConsumer() {
+        $count = 10;
+        $this->produceMessages($count, "test.nine", "Deadlettered Message");
+        $output = $this->consumeMessages("test_nine", $count);
+        $this->assertTrue($this->has($output, "Deadlettered Message"), $this->debug($output));
+
+        // Consume messages from dlx queue and check error header
+        // Note: there will be 2x number of messages in deadletter queue:
+        // 1. 1x for republished messages, and
+        // 2. 1x for original messages that are rejected + dropped
+        $output = $this->consumeMessages("test_dlx", $count * 2);
+        $this->assertTrue($count == $this->countString($output, "Error: Something went wrong. Please try again!"), $this->debug($output));
+    }
 }
