@@ -6,6 +6,7 @@ use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Exceptions\InvalidCountOfResponseStatusesException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
+use Revinate\RabbitMqBundle\Exceptions\RejectDropWithErrorException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRepublishException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRequeueStopException;
@@ -47,8 +48,8 @@ abstract class BaseMessageProcessor {
             $messages[] = $message;
         }
         $firstMessage = $messages[0];
+        $exception = null;
         try {
-            $isException = false;
             $this->setCallbackContainer();
             $messageParam = $this->consumer->isBatchConsumer() ? $messages : $firstMessage;
             $queue = $firstMessage->getQueue();
@@ -60,21 +61,24 @@ abstract class BaseMessageProcessor {
         } catch (RejectRequeueException $e) {
             // error_log("Event Requeued due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE;
-            $isException = true;
+            $exception = $e;
         } catch (RejectRequeueStopException $e) {
             // error_log("Event Requeued due to processing error: " . $e->getMessage() . ", quiting");
             $processFlag = DeliveryResponse::MSG_REJECT_REQUEUE_STOP;
-            $isException = true;
+            $exception = $e;
         } catch (RejectDropException $e) {
             // error_log("Event Dropped due to processing error: " . $e->getMessage());
             $processFlag = DeliveryResponse::MSG_REJECT;
-            $isException = true;
+            $exception = $e;
+        } catch (RejectDropWithErrorException $e) {
+            $processFlag = DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR;
+            $exception = $e;
         }
-        $processFlagOrFlags = $this->getSingleOrMultipleProcessFlags($processFlag, count($messages), $isException);
+        $processFlagOrFlags = $this->getSingleOrMultipleProcessFlags($processFlag, count($messages), !is_null($exception));
         // Ack or Nack Messages
         foreach ($messages as $index => $message) {
             $processFlag = is_array($processFlagOrFlags) && isset($processFlagOrFlags[$index]) ? $processFlagOrFlags[$index] : $processFlagOrFlags;
-            $this->consumer->ackOrNackMessage($message, $processFlag);
+            $this->consumer->ackOrNackMessage($message, $processFlag, $exception);
         }
     }
 

@@ -13,6 +13,7 @@ revinate_rabbit_mq:
         test_topic.tx: { connection: test, type: topic }
         test_direct.tx: { connection: test, type: direct }
         test_fanout.tx: { connection: test, type: fanout }
+        test_deadletter.dlx: { connection: test, type: topic }
 
     queues:
         test_zero_q: { exchange: test_topic.tx, routing_keys: ['test.zero'] }
@@ -29,6 +30,8 @@ revinate_rabbit_mq:
         test_one_fanout_q: { exchange: test_fanout.tx }
         test_two_fanout_q: { exchange: test_fanout.tx }
         test_rpc_server_q: { exchange: test_topic.tx, routing_keys: ['rpc.message'] }
+        test_nine_q: { exchange: test_topic.tx, routing_keys: ['test.nine'], arguments: { 'x-dead-letter-routing-key': ['S', 'test.#'], 'x-dead-letter-exchange': ['S', 'test_deadletter.dlx'] } }
+        test_dlx_q: { exchange: test_deadletter.dlx, routing_keys: ['test.#'] }
 
     producers:
         test_producer: { exchange: test_topic.tx }
@@ -58,6 +61,8 @@ revinate_rabbit_mq:
         test_self_publish: { queue: test_six_q, callback: test.publish_to_self.consumer, idle_timeout: 1 }
         test_six: { queue: test_six_another_q, callback: test.one.consumer, idle_timeout: 1 }
         test_rpc_server: { queue: test_rpc_server_q, callback: test.rpc.server , idle_timeout: 1}
+        test_nine: { queue: test_nine_q, callback: test.nine.consumer, idle_timeout: 1 }
+        test_dlx: { queue: test_dlx_q, callback: test.dlx.consumer, idle_timeout: 1 }
 
 services:
   test.one.consumer:
@@ -94,4 +99,12 @@ services:
 
   test.rpc.server:
       class: Revinate\RabbitMqBundle\Test\Consumer\RpcServer
+      arguments: []
+
+  test.nine.consumer:
+      class: Revinate\RabbitMqBundle\Test\Consumer\TestNineConsumer
+      arguments: []
+
+  test.dlx.consumer:
+      class: Revinate\RabbitMqBundle\Test\Consumer\TestDLXConsumer
       arguments: []

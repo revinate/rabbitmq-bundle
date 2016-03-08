@@ -10,11 +10,13 @@ use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
 use Revinate\RabbitMqBundle\Consumer\Processor\BatchMessageProcessor;
 use Revinate\RabbitMqBundle\Consumer\Processor\SingleMessageProcessor;
 use Revinate\RabbitMqBundle\Decoder\DecoderInterface;
+use Revinate\RabbitMqBundle\Encoder\EncoderHelper;
 use Revinate\RabbitMqBundle\Exceptions\NoConsumerCallbackForMessageException;
 use Revinate\RabbitMqBundle\Exceptions\NoQueuesConfiguredForConsumerException;
 use Revinate\RabbitMqBundle\Exceptions\QueuesHavingMultipleConnectionsException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Producer\BaseProducer;
+use Revinate\RabbitMqBundle\Producer\Producer;
 use Revinate\RabbitMqBundle\Queue\Queue;
 use Revinate\RabbitMqBundle\Message\Message;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -198,25 +200,40 @@ class Consumer {
     /**
      *
      * @param \Revinate\RabbitMqBundle\Message\Message $message
-     * @param $processFlag
+     * @param int $processFlag delivery response flag from consumer
+     * @param \Exception $e Propagated exception from consumer
      */
-    public function ackOrNackMessage(Message $message, $processFlag) {
+    public function ackOrNackMessage(Message $message, $processFlag, \Exception $e = null) {
         $amqpMessage = $message->getAmqpMessage();
         $channel = $amqpMessage->delivery_info['channel'];
         $deliveryTag = $amqpMessage->delivery_info['delivery_tag'];
         if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
-        } else if ($processFlag === DeliveryResponse::MSG_SINGLE_NACK_REQUEUE) {
+        } elseif ($processFlag === DeliveryResponse::MSG_SINGLE_NACK_REQUEUE) {
             // NACK and requeue message to RabbitMQ (basic_nack is rabbitmq only, not an AMQP standard)
             $channel->basic_nack($deliveryTag, false, true);
-        } else if ($processFlag === DeliveryResponse::MSG_REJECT) {
+        } elseif ($processFlag === DeliveryResponse::MSG_REJECT) {
             // Reject and drop
             $channel->basic_reject($deliveryTag, false);
-        } else if ($processFlag == DeliveryResponse::MSG_REJECT_REQUEUE_STOP) {
+        } elseif ($processFlag == DeliveryResponse::MSG_REJECT_REQUEUE_STOP) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
             $this->stopAllConsumers();
+        } elseif ($processFlag == DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR) {
+            $qArgs = $message->getQueue()->getArguments();
+            if (isset($qArgs["x-dead-letter-exchange"][1]) && $e) {
+                $message->addHeader("x-exception-message", $e->getMessage());
+                $message->addHeader("x-original-exchange", $message->getExchangeName());
+                $message->addHeader("x-original-routingKey", $message->getOriginalRoutingKey());
+                $message->addHeader("x-original-stacktrace", $e->getTraceAsString());
+                $encoder = EncoderHelper::getEncoderFromDecoder($this->getDecoder());
+                $amqpMessage = new AMQPMessage($encoder->encode($message->getData()), Producer::getAMQPProperties($message));
+                $channel->basic_publish($amqpMessage, $qArgs["x-dead-letter-exchange"][1], $message->getRoutingKey());
+                $channel->basic_ack($deliveryTag);
+            } else {
+                $channel->basic_reject($deliveryTag, false);
+            }
         } else {
             // Remove message from queue only if callback return not false
             $channel->basic_ack($deliveryTag);

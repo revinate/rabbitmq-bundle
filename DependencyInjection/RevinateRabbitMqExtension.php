@@ -147,12 +147,12 @@ class RevinateRabbitMqExtension extends Extension
             $callbackNames = array();
             if (! is_null($consumer['queue'])) {
                 $queueNames[] = $consumer['queue'];
-            } else if (! empty($consumer['queues'])) {
+            } elseif (! empty($consumer['queues'])) {
                 $queueNames = $consumer['queues'];
             }
             if (! is_null($consumer['callback'])) {
                 $callbackNames[] = $consumer['callback'];
-            } else if (! empty($consumer['callbacks'])) {
+            } elseif (! empty($consumer['callbacks'])) {
                 $callbackNames = $consumer['callbacks'];
             }
             if (empty($queueNames)) {
