@@ -70,13 +70,22 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertSame($count, $this->countString($output, "Routing Key:test.two"), $this->debug($output));
     }
 
-    public function xtestBulkConsumerWithBufferWait() {
+    public function testBulkConsumerWithBufferWait() {
         $count = 20;
         $this->produceMessages($count, "test.two");
         usleep(50000);
         $this->produceMessages($count, "test.two");
         $output = $this->consumeMessages("test_two", $count * 2);
         $this->assertSame($count * 2, $this->countString($output, "Routing Key:test.two"), $this->debug($output));
+        $this->assertTrue($this->countString($output, "Returning from Bulk execute") > 1, $this->debug($output));
+    }
+
+    public function testBulkConsumerWithBufferWaitAndQueueSizeLessThanBatchSize() {
+        $count = 5;
+        $this->produceMessages($count, "test.two");
+        $output = $this->consumeMessages("test_two", $count);
+        echo $output;
+        $this->assertSame($count, $this->countString($output, "Routing Key:test.two"), $this->debug($output));
         $this->assertTrue($this->countString($output, "Returning from Bulk execute") > 1, $this->debug($output));
     }
 
