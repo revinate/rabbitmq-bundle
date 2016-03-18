@@ -182,6 +182,13 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertSame(1, $this->countString($output, "Routing Key:test.zero"), $this->debug($output));
     }
 
+    public function testRejectRequeueStopConsumer() {
+        $count = 2;
+        $this->produceMessages($count, "test.zero");
+        $output = $this->consumeMessages("test_reject_drop_stop", $count);
+        $this->assertSame(1, $this->countString($output, "Routing Key:test.zero"), $this->debug($output));
+    }
+
     public function testPublishToSelf() {
         $this->produceMessages(1, "test.six");
         $output = $this->consumeMessages("test_self_publish", 6);
