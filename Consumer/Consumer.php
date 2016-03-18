@@ -216,11 +216,15 @@ class Consumer {
         } elseif ($processFlag === DeliveryResponse::MSG_REJECT) {
             // Reject and drop
             $channel->basic_reject($deliveryTag, false);
-        } elseif ($processFlag == DeliveryResponse::MSG_REJECT_REQUEUE_STOP) {
+        } else if ($processFlag === DeliveryResponse::MSG_REJECT_DROP_STOP) {
+            // Reject and drop
+            $channel->basic_reject($deliveryTag, false);
+            $this->stopAllConsumers();
+        } else if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE_STOP) {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
             $this->stopAllConsumers();
-        } elseif ($processFlag == DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR) {
+        } elseif ($processFlag === DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR) {
             $qArgs = $message->getQueue()->getArguments();
             if (isset($qArgs["x-dead-letter-exchange"][1]) && $e) {
                 $message->addHeader("x-exception-message", $e->getMessage());
