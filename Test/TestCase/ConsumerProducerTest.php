@@ -182,7 +182,7 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertSame(1, $this->countString($output, "Routing Key:test.zero"), $this->debug($output));
     }
 
-    public function testRejectRequeueStopConsumer() {
+    public function testRejectStopConsumer() {
         $count = 2;
         $this->produceMessages($count, "test.zero");
         $output = $this->consumeMessages("test_reject_drop_stop", $count);
@@ -267,5 +267,23 @@ class ConsumerProducerTest extends BaseTestCase
         // 2. 1x for original messages that are rejected + dropped
         $output = $this->consumeMessages("test_dlx", $count * 2);
         $this->assertTrue($count == $this->countString($output, "Error: Something went wrong. Please try again!"), $this->debug($output));
+    }
+
+    /**
+     * Test the reject drop and stop with error exception
+     *
+     * Here we produce 5 messages and then we try and consume them.
+     * Ideally only 1 message will be consumed and we verify that by checking dlx.
+     * The message int eh dlx also should contain the one message with the error specified in the consumer
+     */
+    public function testRejectDropStopWithError() {
+        $count = 5;
+        $this->produceMessages($count, "test.ten", "Message is here!");
+        $output = $this->consumeMessages("test_ten", $count);
+        $this->assertTrue($this->has($output, "Message is here!"), $this->debug($output));
+
+        $output = $this->consumeMessages("test_dlx", $count);
+        $this->assertNotFalse(strpos($output, "Somethings wrong! Consuming has stopped! Here is why!?"));
+        $this->assertEquals(1, substr_count($output, "Somethings wrong! Consuming has stopped! Here is why!?"));
     }
 }

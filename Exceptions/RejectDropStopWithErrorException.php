@@ -3,8 +3,8 @@
 namespace Revinate\RabbitMqBundle\Exceptions;
 
 /**
- * Class RejectDropWithErrorException
+ * Class RejectDropStopWithErrorException
  * @package Revinate\RabbitMqBundle\Exceptions
  */
-class RejectDropWithErrorException extends \Exception {
+class RejectDropStopWithErrorException extends \Exception {
 }
