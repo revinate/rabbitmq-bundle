@@ -40,4 +40,9 @@ class DeliveryResponse {
      * Flag for reject, drop and stop
      */
     const MSG_REJECT_DROP_STOP = 5;
+
+    /**
+     * Flag to reject drop and stop with error, ie publish to deadletter exchange with error header
+     */
+    const MSG_REJECT_DROP_STOP_WITH_ERROR = 6;
 }

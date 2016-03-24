@@ -224,7 +224,7 @@ class Consumer {
             // Reject and requeue message to RabbitMQ
             $channel->basic_reject($deliveryTag, true);
             $this->stopAllConsumers();
-        } elseif ($processFlag === DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR) {
+        } elseif ($processFlag === DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR || $processFlag === DeliveryResponse::MSG_REJECT_DROP_STOP_WITH_ERROR) {
             $qArgs = $message->getQueue()->getArguments();
             if (isset($qArgs["x-dead-letter-exchange"][1]) && $e) {
                 $message->addHeader("x-exception-message", $e->getMessage());
@@ -237,6 +237,10 @@ class Consumer {
                 $channel->basic_ack($deliveryTag);
             } else {
                 $channel->basic_reject($deliveryTag, false);
+            }
+
+            if ($processFlag === DeliveryResponse::MSG_REJECT_DROP_STOP_WITH_ERROR) {
+                $this->stopAllConsumers();
             }
         } else {
             // Remove message from queue only if callback return not false

@@ -6,6 +6,7 @@ use Revinate\RabbitMqBundle\Consumer\Consumer;
 use Revinate\RabbitMqBundle\Consumer\DeliveryResponse;
 use Revinate\RabbitMqBundle\Exceptions\InvalidCountOfResponseStatusesException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropException;
+use Revinate\RabbitMqBundle\Exceptions\RejectDropStopWithErrorException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropWithErrorException;
 use Revinate\RabbitMqBundle\Exceptions\RejectDropStopException;
 use Revinate\RabbitMqBundle\Exceptions\RejectRepublishException;
@@ -76,6 +77,9 @@ abstract class BaseMessageProcessor {
             $exception = $e;
         } catch (RejectDropWithErrorException $e) {
             $processFlag = DeliveryResponse::MSG_REJECT_DROP_WITH_ERROR;
+            $exception = $e;
+        } catch (RejectDropStopWithErrorException $e) {
+            $processFlag = DeliveryResponse::MSG_REJECT_DROP_STOP_WITH_ERROR;
             $exception = $e;
         }
         $processFlagOrFlags = $this->getSingleOrMultipleProcessFlags($processFlag, count($messages), !is_null($exception));
