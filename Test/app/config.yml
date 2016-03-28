@@ -5,10 +5,10 @@ framework:
 revinate_rabbit_mq:
     connections:
         test:
-            user:     'test'
-            password: 'test'
-            host:     '127.0.0.1'
-            vhost:    '/test'
+            user:     'guest'
+            password: 'guest'
+            host:      'rabbitmq'
+            vhost:    '/'
     exchanges:
         test_topic.tx: { connection: test, type: topic }
         test_direct.tx: { connection: test, type: direct }
@@ -33,6 +33,7 @@ revinate_rabbit_mq:
         test_nine_q: { exchange: test_topic.tx, routing_keys: ['test.nine'], arguments: { 'x-dead-letter-routing-key': ['S', 'test.#'], 'x-dead-letter-exchange': ['S', 'test_deadletter.dlx'] } }
         test_ten_q: { exchange: test_topic.tx, routing_keys: ['test.ten'], arguments: { 'x-dead-letter-routing-key': ['S', 'test.#'], 'x-dead-letter-exchange': ['S', 'test_deadletter.dlx'] } }
         test_dlx_q: { exchange: test_deadletter.dlx, routing_keys: ['test.#'] }
+        test_eleven_q: { exchange: test_topic.tx, routing_keys: ['test.eleven'] }
 
     producers:
         test_producer: { exchange: test_topic.tx }
@@ -66,6 +67,7 @@ revinate_rabbit_mq:
         test_nine: { queue: test_nine_q, callback: test.nine.consumer, idle_timeout: 1 }
         test_ten: { queue: test_ten_q, callback: test.ten.consumer, idle_timeout: 1 }
         test_dlx: { queue: test_dlx_q, callback: test.dlx.consumer, idle_timeout: 1 }
+        test_eleven: { queue: test_eleven_q, callback: test.eleven.consumer, idle_timeout: 1, batch_size: 10, buffer_wait: 100000 }
 
 services:
   test.one.consumer:
@@ -118,4 +120,8 @@ services:
 
   test.dlx.consumer:
       class: Revinate\RabbitMqBundle\Test\Consumer\TestDLXConsumer
+      arguments: []
+
+  test.eleven.consumer:
+      class: Revinate\RabbitMqBundle\Test\Consumer\TestElevenConsumer
       arguments: []

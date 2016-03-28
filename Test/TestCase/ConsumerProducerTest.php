@@ -80,15 +80,6 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertTrue($this->countString($output, "Returning from Bulk execute") > 1, $this->debug($output));
     }
 
-    public function testBulkConsumerWithBufferWaitAndQueueSizeLessThanBatchSize() {
-        // batch_size is 10
-        $count = 5;
-        $this->produceMessages($count, "test.two");
-        $output = $this->consumeMessages("test_two", $count);
-        $this->assertSame($count, $this->countString($output, "Routing Key:test.two"), $this->debug($output));
-        $this->assertTrue($this->countString($output, "Returning from Bulk execute") > 1, $this->debug($output));
-    }
-
     public function testConsumerWithCustomMessage() {
         $count = 2;
         $customMessage = new CustomMessage("custom Data", "one.three");
@@ -262,10 +253,7 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertTrue($this->has($output, "Deadlettered Message"), $this->debug($output));
 
         // Consume messages from dlx queue and check error header
-        // Note: there will be 2x number of messages in deadletter queue:
-        // 1. 1x for republished messages, and
-        // 2. 1x for original messages that are rejected + dropped
-        $output = $this->consumeMessages("test_dlx", $count * 2);
+        $output = $this->consumeMessages("test_dlx", $count);
         $this->assertTrue($count == $this->countString($output, "Error: Something went wrong. Please try again!"), $this->debug($output));
     }
 
@@ -285,5 +273,14 @@ class ConsumerProducerTest extends BaseTestCase
         $output = $this->consumeMessages("test_dlx", $count);
         $this->assertNotFalse(strpos($output, "Somethings wrong! Consuming has stopped! Here is why!?"));
         $this->assertEquals(1, substr_count($output, "Somethings wrong! Consuming has stopped! Here is why!?"));
+    }
+
+    public function testBulkConsumerWithBufferWaitAndQueueSizeLessThanBatchSize() {
+        // batch_size is 10
+        $count = 5;
+        $this->produceMessages($count, "test.eleven");
+        $output = $this->consumeMessages("test_eleven", $count);
+        $this->assertSame($count, $this->countString($output, "Routing Key:test.eleven"), $this->debug($output));
+        $this->assertTrue($this->countString($output, "Returning from Bulk execute") > 1, $this->debug($output));
     }
 }
