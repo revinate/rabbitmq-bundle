@@ -1,0 +1,20 @@
+sudo: required
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+
+env:
+  - TARGET="dev"
+
+before_install:
+  # Docker-compose installation
+  - curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+script:
+  - make tests

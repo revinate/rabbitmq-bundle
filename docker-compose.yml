@@ -2,7 +2,5 @@ rabbitmq-bundle:
   build: .
   links:
     - rabbitmq
-  environment:
-    - HOSTNAME=rabbitmq
 rabbitmq:
   image: rabbitmq
