@@ -3,7 +3,7 @@ This bundle is inspired from [oldSoundRabbitMqBundle](https://github.com/videlal
 
 ## How to install
 1. Install [Composer] (http://symfony.com/doc/current/cookbook/composer.html)
-2. Run `composer require /revinate/rabbitmq-bundle` and then `composer update`
+2. Run `composer require revinate/rabbitmq-bundle` and then `composer update revinate/rabbitmq-bundle`
 3. It is wise to anchor the version to latest tag rather than "dev-master"
 
 ## Before you use this bundle, read up on:
