@@ -1,3 +1,5 @@
+![Build Status](https://travis-ci.org/revinate/rabbitmq-bundle.svg?branch=master)
+
 ## About this bundle
 This bundle is inspired from [oldSoundRabbitMqBundle](https://github.com/videlalvaro/RabbitMqBundle) and  will help you to build asynchronous services using RabbitMq message broker.
 
