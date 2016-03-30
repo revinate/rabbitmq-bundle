@@ -231,9 +231,10 @@ class Consumer {
                 $message->addHeader("x-original-exchange", $message->getExchangeName());
                 $message->addHeader("x-original-routingKey", $message->getOriginalRoutingKey());
                 $message->addHeader("x-original-stacktrace", $e->getTraceAsString());
+                $dlxRoutingKey = isset($qArgs['x-dead-letter-routing-key'][1]) ? $qArgs['x-dead-letter-routing-key'][1] : $message->getRoutingKey();
                 $encoder = EncoderHelper::getEncoderFromDecoder($this->getDecoder());
                 $amqpMessage = new AMQPMessage($encoder->encode($message->getData()), Producer::getAMQPProperties($message));
-                $channel->basic_publish($amqpMessage, $qArgs["x-dead-letter-exchange"][1], $message->getRoutingKey());
+                $channel->basic_publish($amqpMessage, $qArgs["x-dead-letter-exchange"][1], $dlxRoutingKey);
                 $channel->basic_ack($deliveryTag);
             } else {
                 $channel->basic_reject($deliveryTag, false);
