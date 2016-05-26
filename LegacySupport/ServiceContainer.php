@@ -25,6 +25,14 @@ class ServiceContainer {
 
     /** @var ServiceContainer */
     protected static $instance;
+    /** @var Producer[]  */
+    protected $producers = array();
+    /** @var Exchange[]  */
+    protected $exchanges = array();
+    /** @var Consumer[]  */
+    protected $consumers = array();
+    /** @var Queue[]  */
+    protected $queues = array();
 
     /**
      * @param $env
@@ -48,6 +56,13 @@ class ServiceContainer {
         $defaultConfig = $parser->parse(file_get_contents(__DIR__ . "/../Resources/config/legacy_defaults.yml"));
         $this->config = $parser->parse(file_get_contents($configFile));
         $this->config = array_merge($defaultConfig['revinate_rabbit_mq'], $this->config['revinate_rabbit_mq']);
+    }
+
+    /**
+     * @return array
+     */
+    public function getConfig() {
+        return $this->config;
     }
 
     /**
@@ -110,20 +125,23 @@ class ServiceContainer {
         if (!isset($this->config['exchanges'][$name])) {
             $this->throwError("Exchange: $name");
         }
-        $exchange = array_merge($this->config['default_exchange'], $this->config['exchanges'][$name]);
-        return new Exchange(
-            $name,
-            $this->getConnection($exchange['connection']),
-            $exchange['type'],
-            $exchange['passive'],
-            $exchange['durable'],
-            $exchange['auto_delete'],
-            $exchange['internal'],
-            $exchange['nowait'],
-            $exchange['arguments'],
-            $exchange['ticket'],
-            $exchange['managed']
-        );
+        if (!isset($this->exchanges[$name])) {
+            $config = array_merge($this->config['default_exchange'], $this->config['exchanges'][$name]);
+            $this->exchanges[$name] = new Exchange(
+                $name,
+                $this->getConnection($config['connection']),
+                $config['type'],
+                $config['passive'],
+                $config['durable'],
+                $config['auto_delete'],
+                $config['internal'],
+                $config['nowait'],
+                $config['arguments'],
+                $config['ticket'],
+                $config['managed']
+            );
+        }
+        return $this->exchanges[$name];
     }
 
     /**
@@ -135,20 +153,23 @@ class ServiceContainer {
         if (!isset($this->config['queues'][$name])) {
             $this->throwError("Queue: $name");
         }
-        $queue = array_merge($this->config['default_queue'], $this->config['queues'][$name]);
-        return new Queue(
-            $name,
-            $this->getExchange($queue['exchange']),
-            $queue['passive'],
-            $queue['durable'],
-            $queue['exclusive'],
-            $queue['auto_delete'],
-            $queue['nowait'],
-            $queue['arguments'],
-            $queue['routing_keys'],
-            $queue['ticket'],
-            $queue['managed']
-        );
+        if (!isset($this->queues[$name])) {
+            $config = array_merge($this->config['default_queue'], $this->config['queues'][$name]);
+            $this->queues[$name] = new Queue(
+                $name,
+                $this->getExchange($config['exchange']),
+                $config['passive'],
+                $config['durable'],
+                $config['exclusive'],
+                $config['auto_delete'],
+                $config['nowait'],
+                $config['arguments'],
+                $config['routing_keys'],
+                $config['ticket'],
+                $config['managed']
+            );
+        }
+        return $this->queues[$name];
     }
 
     /**
@@ -160,13 +181,15 @@ class ServiceContainer {
         if (!isset($this->config['producers'][$name])) {
             $this->throwError("Producer: $name");
         }
-        $producer = array_merge($this->config['default_producer'], $this->config['producers'][$name]);
-        $producerInstance = new Producer(
-            $name,
-            $this->getExchange($producer['exchange'])
-        );
-        $producerInstance->setEncoder(new $producer['encoder']);
-        return $producerInstance;
+        if (!isset($this->producers[$name])) {
+            $config = array_merge($this->config['default_producer'], $this->config['producers'][$name]);
+            $this->producers[$name] = new Producer(
+                $name,
+                $this->getExchange($config['exchange'])
+            );
+            $this->producers[$name]->setEncoder(new $config['encoder']);
+        }
+        return $this->producers[$name];
     }
 
     /**
@@ -178,19 +201,21 @@ class ServiceContainer {
         if (!isset($this->config['consumers'][$name])) {
             $this->throwError("Consumer: $name");
         }
-        $consumer = array_merge($this->config['default_consumer'], $this->config['consumers'][$name]);
-        $consumerInstance = new Consumer(null, $name, array($this->getQueue($consumer['queue'])));
-        $consumerInstance->setCallbacks(array(array(new $consumer['callback'], 'execute')));
-        $consumerInstance->setIdleTimeout($consumer['idle_timeout']);
-        $consumerInstance->setBatchSize($consumer['batch_size']);
-        $consumerInstance->setBufferWait($consumer['buffer_wait']);
-        $consumerInstance->setMessageClass($consumer['message_class']);
-        $consumerInstance->setDecoder(new $consumer['decoder']);
+        if (!isset($this->consumers[$name])) {
+            $config = array_merge($this->config['default_consumer'], $this->config['consumers'][$name]);
+            $this->consumers[$name] = new Consumer(null, $name, array($this->getQueue($config['queue'])));
+            $this->consumers[$name]->setCallbacks(array(array(new $config['callback'], 'execute')));
+            $this->consumers[$name]->setIdleTimeout($config['idle_timeout']);
+            $this->consumers[$name]->setBatchSize($config['batch_size']);
+            $this->consumers[$name]->setBufferWait($config['buffer_wait']);
+            $this->consumers[$name]->setMessageClass($config['message_class']);
+            $this->consumers[$name]->setDecoder(new $config['decoder']);
 
-        $defaultQosOptions =  array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
-        $consumer['qos_options'] = isset($consumer['qos_options']) ? array_replace($defaultQosOptions, $consumer['qos_options']) : $defaultQosOptions;
-        $consumerInstance->setQosOptions($consumer['qos_options']);
-        return $consumerInstance;
+            $defaultQosOptions = array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
+            $config['qos_options'] = isset($config['qos_options']) ? array_replace($defaultQosOptions, $config['qos_options']) : $defaultQosOptions;
+            $this->consumers[$name]->setQosOptions($config['qos_options']);
+        }
+        return $this->consumers[$name];
     }
 
     /**

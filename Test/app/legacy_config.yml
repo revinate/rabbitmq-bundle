@@ -1,0 +1,19 @@
+revinate_rabbit_mq:
+    connections:
+        test:
+            user:     'guest'
+            vhost:    '/'
+    environment:
+        test:
+            connections:
+                test:
+                    password: 'guest'
+                    host:     'rabbitmq'
+    exchanges:
+        test_topic.tx: { connection: test, type: topic }
+    queues:
+        test_zero_q: { exchange: test_topic.tx, routing_keys: ['test.zero'] }
+    producers:
+        test_producer: { exchange: test_topic.tx }
+    consumers:
+        test_zero: { queue: test_zero_q, callback: Revinate\RabbitMqBundle\Test\Consumer\TestOneConsumer, idle_timeout: 1 }
