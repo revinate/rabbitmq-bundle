@@ -102,7 +102,7 @@ This bundle is inspired from [oldSoundRabbitMqBundle](https://github.com/videlal
         * _batch_size_: Number of messages to process in bulk. If you use this option, your consumer callback should implement `BatchConsumerInterface` which accepts a batch of messages at a time. You can ack/nack these messages in one go. Useful if you want to do bulk operations on a set of messages. Default: `null` or 1.
             * If `batch_size` is set, `qos:prefetch_count` is set to `batch_size`
             * When batch consumer starts, the batch size starts from 1 and doubles every tick to reach `batch_size`. This is done in order to avoid cases when queue has messages less than the `batch_size`.
-        * _buffer_wait_: Number of milliseconds to wait for buffer to get full before flushing. This should be set carefully. It should small enough that your consumer is not waiting for buffer to get full and large enough that you are processing `batch_size` number of messages.
+        * _buffer_wait_: Number of milliseconds to wait for buffer to get full before flushing. This should be set carefully. It should small enough that your consumer is not waiting for buffer to get full and large enough that you are processing `batch_size` number of messages. Default: `1000ms`. 
         * _message_class_: Custom Message class. You can extend `Message` class to define your own message class to use. Default: `Message`
         * _decoder_: Decoder service to use to decode messages. Default: `revinate.rabbit_mq.decoder.json`
             * You can define your own decoder by creating a service that implements `DecoderInterface`
