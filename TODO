@@ -1,2 +1,4 @@
+TODOs
 - Logging
 - Set service definition in Services class so that we don't load connections all the time
+- Make heartbeat and keepalive configurable

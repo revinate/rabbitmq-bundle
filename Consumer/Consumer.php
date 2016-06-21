@@ -72,7 +72,7 @@ class Consumer {
         $this->name = $name;
         // Use first queues connection as the default connection
         $this->connection = $queues[0]->getConnection();
-        $this->channel = $queues[0]->getChannel();
+        $this->channel = $this->connection->channel();
         $this->queues = $queues;
 
         $this->validateQueues();
@@ -122,7 +122,7 @@ class Consumer {
     /**
      * For batch consumers, assume prefetch count = target as doing anything else causes issues
      * where rabbitmq doesn't send messages until the previous prefetch size is acked.
-     * The problem specially arises when prefetch size != batch size.
+     * The problem specially arises when prefetch count != batch size.
      * Example:
      * Assume batch size is 10 and prefetch Count is 10.
      * - In our implementation, batch size increases like 1,2,4,8,16 etc till the batch size. So
@@ -177,7 +177,6 @@ class Consumer {
 
     /**
      * Signal Listener
-     * @param int $signo
      */
     public function stopAllConsumers() {
         foreach ($this->queues as $queue) {

@@ -151,6 +151,15 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertSame($count, $this->countString($output, "Routing Key:test.three"), $this->debug($output));
     }
 
+    public function testMultipleConsumersAlt() {
+        $count = 10;
+        $this->produceMessages($count, "test.one");
+        $this->produceMessages($count, "test.three");
+        $output = $this->consumeMessages("test_multiple_consumers_alt", $count * 2);
+        $this->assertSame($count, $this->countString($output, "Routing Key:test.one"), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, "Routing Key:test.three"), $this->debug($output));
+    }
+
     public function testConsumerThatThrowsException() {
         $count = 20;
         $this->produceMessages($count, "test.three");

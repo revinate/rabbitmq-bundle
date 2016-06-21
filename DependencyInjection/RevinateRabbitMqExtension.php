@@ -48,18 +48,18 @@ class RevinateRabbitMqExtension extends Extension
      * Load Connections
      */
     protected function loadConnections() {
-        foreach ($this->config['connections'] as $key => $connection) {
+        foreach ($this->config['connections'] as $key => $config) {
             $classParam =
-                $connection['lazy']
+                $config['lazy']
                     ? '%revinate_rabbit_mq.lazy.connection.class%'
                     : '%revinate_rabbit_mq.connection.class%';
             //@see PhpAmqpLib\Connection\AMQPStreamConnection::__construct()
             $definition = new Definition($classParam, array(
-                $connection['host'],
-                $connection['port'],
-                $connection['user'],
-                $connection['password'],
-                $connection['vhost']
+                $config['host'],
+                $config['port'],
+                $config['user'],
+                $config['password'],
+                $config['vhost']
             ));
             $definition->setLazy(true);
 
@@ -72,19 +72,19 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadExchanges() {
         $servicesDefinition = $this->container->getDefinition('revinate.rabbit_mq.services');
-        foreach ($this->config['exchanges'] as $key => $exchange) {
+        foreach ($this->config['exchanges'] as $key => $config) {
             $definition = new Definition('%revinate_rabbit_mq.exchange.class%', array(
                 $key,
-                $this->getConnection($exchange['connection']),
-                $exchange['type'],
-                $exchange['passive'],
-                $exchange['durable'],
-                $exchange['auto_delete'],
-                $exchange['internal'],
-                $exchange['nowait'],
-                $exchange['arguments'],
-                $exchange['ticket'],
-                $exchange['managed'],
+                $this->getConnection($config['connection']),
+                $config['type'],
+                $config['passive'],
+                $config['durable'],
+                $config['auto_delete'],
+                $config['internal'],
+                $config['nowait'],
+                $config['arguments'],
+                $config['ticket'],
+                $config['managed'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.exchange.%s', $key), $definition);
             $servicesDefinition->addMethodCall('addExchange', array(new Reference(sprintf('revinate_rabbit_mq.exchange.%s', $key))));
@@ -96,19 +96,19 @@ class RevinateRabbitMqExtension extends Extension
      */
     protected function loadQueues() {
         $servicesDefinition = $this->container->getDefinition('revinate.rabbit_mq.services');
-        foreach ($this->config['queues'] as $key => $queue) {
+        foreach ($this->config['queues'] as $key => $config) {
             $definition = new Definition('%revinate_rabbit_mq.queue.class%', array(
                 $key,
-                $this->getExchange($queue['exchange']),
-                $queue['passive'],
-                $queue['durable'],
-                $queue['exclusive'],
-                $queue['auto_delete'],
-                $queue['nowait'],
-                $queue['arguments'],
-                $queue['routing_keys'],
-                $queue['ticket'],
-                $queue['managed'],
+                $this->getExchange($config['exchange']),
+                $config['passive'],
+                $config['durable'],
+                $config['exclusive'],
+                $config['auto_delete'],
+                $config['nowait'],
+                $config['arguments'],
+                $config['routing_keys'],
+                $config['ticket'],
+                $config['managed'],
             ));
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.queue.%s', $key), $definition);
             $servicesDefinition->addMethodCall('addQueue', array(new Reference(sprintf('revinate_rabbit_mq.queue.%s', $key))));
@@ -142,18 +142,24 @@ class RevinateRabbitMqExtension extends Extension
      * Load Consumers
      */
     protected function loadConsumers() {
-        foreach ($this->config['consumers'] as $key => $consumer) {
+        foreach ($this->config['consumers'] as $key => $config) {
             $queueNames = array();
             $callbackNames = array();
-            if (! is_null($consumer['queue'])) {
-                $queueNames[] = $consumer['queue'];
-            } elseif (! empty($consumer['queues'])) {
-                $queueNames = $consumer['queues'];
+            if (! is_null($config['queue'])) {
+                $queueNames[] = $config['queue'];
+            } elseif (! empty($config['queues'])) {
+                $queueNames = $config['queues'];
             }
-            if (! is_null($consumer['callback'])) {
-                $callbackNames[] = $consumer['callback'];
-            } elseif (! empty($consumer['callbacks'])) {
-                $callbackNames = $consumer['callbacks'];
+            if (! is_null($config['callback'])) {
+                $callbackNames[] = $config['callback'];
+            } elseif (! empty($config['callbacks'])) {
+                $callbackNames = $config['callbacks'];
+            }
+            if (isset($config['mappings'])) {
+                foreach ($config['mappings'] as $mapping) {
+                    $callbackNames[] = $mapping['callback'];
+                    $queueNames[] = $mapping['queue'];
+                }
             }
             if (empty($queueNames)) {
                 throw new NoQueuesConfiguredForConsumerException(__METHOD__ . " $key: This consumer is not configured to listen to any queues.");
@@ -164,7 +170,6 @@ class RevinateRabbitMqExtension extends Extension
             if (count($queueNames) != count($callbackNames)) {
                 throw new MissingCallbacksForConsumerException(__METHOD__ . " $key: Some queues are missing callbacks");
             }
-
             $definition = new Definition('%revinate_rabbit_mq.consumer.class%', array(
                 $this->getContainer(),
                 $key,
@@ -172,15 +177,15 @@ class RevinateRabbitMqExtension extends Extension
             ));
             $definition->addMethodCall('setCallbacks', array($this->getCallbacks($callbackNames, 'execute')));
             $definition->addMethodCall('setSetContainerCallbacks', array($this->getCallbacks($callbackNames, 'setContainer')));
-            $definition->addMethodCall('setIdleTimeout', array($consumer['idle_timeout']));
-            $definition->addMethodCall('setBatchSize', array($consumer['batch_size']));
-            $definition->addMethodCall('setMessageClass', array($consumer['message_class']));
-            $definition->addMethodCall('setBufferWait', array($consumer['buffer_wait']));
-            $definition->addMethodCall('setDecoder', array(new Reference($consumer['decoder'])));
+            $definition->addMethodCall('setIdleTimeout', array($config['idle_timeout']));
+            $definition->addMethodCall('setBatchSize', array($config['batch_size']));
+            $definition->addMethodCall('setMessageClass', array($config['message_class']));
+            $definition->addMethodCall('setBufferWait', array($config['buffer_wait']));
+            $definition->addMethodCall('setDecoder', array(new Reference($config['decoder'])));
 
             $defaultQosOptions =  array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
-            $consumer['qos_options'] = isset($consumer['qos_options']) ? array_replace($defaultQosOptions, $consumer['qos_options']) : $defaultQosOptions;
-            $definition->addMethodCall('setQosOptions', array($consumer['qos_options']));
+            $config['qos_options'] = isset($config['qos_options']) ? array_replace($defaultQosOptions, $config['qos_options']) : $defaultQosOptions;
+            $definition->addMethodCall('setQosOptions', array($config['qos_options']));
 
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.consumer.%s', $key), $definition);
         }

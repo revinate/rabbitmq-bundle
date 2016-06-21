@@ -15,6 +15,13 @@ revinate_rabbit_mq:
         test_fanout.tx: { connection: test, type: fanout }
         test_deadletter.dlx: { connection: test, type: topic }
 
+    producers:
+        test_producer: { exchange: test_topic.tx }
+        test_string_encoder: { exchange: test_topic.tx, encoder: revinate.rabbit_mq.encoder.string }
+        test_php_object_encoder: { exchange: test_topic.tx, encoder: revinate.rabbit_mq.encoder.serialize }
+        test_direct_producer: { exchange: test_direct.tx }
+        test_fanout_producer: { exchange: test_fanout.tx }
+
     queues:
         test_zero_q: { exchange: test_topic.tx, routing_keys: ['test.zero'] }
         test_one_q: { exchange: test_topic.tx, routing_keys: ['test.one'] }
@@ -35,13 +42,6 @@ revinate_rabbit_mq:
         test_dlx_q: { exchange: test_deadletter.dlx, routing_keys: ['test.#'] }
         test_eleven_q: { exchange: test_topic.tx, routing_keys: ['test.eleven'] }
 
-    producers:
-        test_producer: { exchange: test_topic.tx }
-        test_string_encoder: { exchange: test_topic.tx, encoder: revinate.rabbit_mq.encoder.string }
-        test_php_object_encoder: { exchange: test_topic.tx, encoder: revinate.rabbit_mq.encoder.serialize }
-        test_direct_producer: { exchange: test_direct.tx }
-        test_fanout_producer: { exchange: test_fanout.tx }
-
     consumers:
         test_zero: { queue: test_zero_q, callback: test.one.consumer, idle_timeout: 1 }
         test_one: { queue: test_one_q, callback: test.one.consumer, idle_timeout: 1 }
@@ -54,7 +54,6 @@ revinate_rabbit_mq:
         test_direct: { queue: test_direct_q, callback: test.one.consumer, idle_timeout: 1  }
         test_one_fanout: { queue: test_one_fanout_q, callback: test.one.consumer, idle_timeout: 1  }
         test_two_fanout: { queue: test_two_fanout_q, callback: test.one.consumer, idle_timeout: 1  }
-        test_multiple_consumers: { queues: [test_one_q, test_three_q], callbacks: [test.one.consumer, test.three.consumer], idle_timeout: 1 }
         test_exception_consumer: { queue: test_three_q, callback: test.exception.consumer, idle_timeout: 1, batch_size: 10, buffer_wait: 100 }
         test_republish: { queue: test_eight_q, callback: test.republish.consumer, idle_timeout: 1  }
         test_reject: { queue: test_four_q, callback: test.reject.consumer, idle_timeout: 1  }
@@ -68,6 +67,12 @@ revinate_rabbit_mq:
         test_ten: { queue: test_ten_q, callback: test.ten.consumer, idle_timeout: 1 }
         test_dlx: { queue: test_dlx_q, callback: test.dlx.consumer, idle_timeout: 1 }
         test_eleven: { queue: test_eleven_q, callback: test.eleven.consumer, idle_timeout: 1, batch_size: 10, buffer_wait: 100000 }
+        test_multiple_consumers: { queues: [test_one_q, test_three_q], callbacks: [test.one.consumer, test.three.consumer], idle_timeout: 1 }
+        test_multiple_consumers_alt:
+            idle_timeout: 1
+            mappings:
+                - {queue: test_one_q, callback: test.one.consumer}
+                - {queue: test_three_q, callback: test.three.consumer}
 
 services:
   test.one.consumer:
