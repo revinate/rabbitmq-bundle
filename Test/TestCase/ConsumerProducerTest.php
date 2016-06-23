@@ -292,4 +292,13 @@ class ConsumerProducerTest extends BaseTestCase
         $this->assertSame($count, $this->countString($output, "Routing Key:test.eleven"), $this->debug($output));
         $this->assertTrue($this->countString($output, "Returning from Bulk execute") > 1, $this->debug($output));
     }
+
+    public function testBaseProducerAndConsumer() {
+        $producer = $this->getContainer()->get("revinate.rabbit_mq.base_producer");
+        $exchange = $this->getContainer()->get("revinate_rabbit_mq.exchange.test_topic.tx");
+        $producer->setExchange($exchange);
+        $producer->publish("Base Producer test", "test.zero");
+        $output = $this->consumeMessages("test_zero", 1);
+        $this->assertTrue($this->has($output, "Routing Key:test.zero"), $this->debug($output));
+    }
 }
