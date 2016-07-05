@@ -4,6 +4,7 @@ namespace Revinate\RabbitMqBundle\Consumer;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;
+use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
 use Revinate\RabbitMqBundle\Consumer\Processor\MessageProcessorInterface;
@@ -79,6 +80,10 @@ class Consumer {
         $this->loadSignalHandlers();
     }
 
+    public function __destruct() {
+        $this->stopAllConsumers();
+    }
+
     /**
      * @throws \BadFunctionCallException
      */
@@ -116,7 +121,12 @@ class Consumer {
             $this->getChannel()->basic_qos($this->qosOptions['prefetch_size'], $this->getPrefetchCount(), $this->qosOptions['global']);
             $this->queueTags[$queue->getName()] = $this->getChannel()->basic_consume($queue->getName(), "", false, false, false, false, array($messageProcessor, 'processMessage'));
         }
-        $this->waitForMessages();
+        try {
+            $this->waitForMessages();
+        } catch (AMQPTimeoutException $e) {
+            $this->stopAllConsumers();
+            throw new AMQPTimeoutException($e->getMessage(), $e->getCode(), $e->getPrevious());
+        }
     }
 
     /**
@@ -182,6 +192,9 @@ class Consumer {
         foreach ($this->queues as $queue) {
             $this->stopConsuming($queue);
         }
+        // Cleanup queue flags and counters
+        $this->stoppedQueue = array();
+        $this->consumed = array();
     }
 
     /**

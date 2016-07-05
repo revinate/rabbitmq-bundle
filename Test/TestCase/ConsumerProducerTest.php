@@ -35,8 +35,7 @@ class ConsumerProducerTest extends BaseTestCase
         $this->runCommand("revinate:rabbitmq:delete-all");
     }
 
-    protected function setUp()
-    {
+    protected function setUp() {
         $this->create();
     }
 
@@ -231,30 +230,6 @@ class ConsumerProducerTest extends BaseTestCase
         //$this->assertTrue($count == $this->countString($output, "Routing Key:test.one"), $this->debug($output));
     }
 
-    /**
-     * @TODO: This functionality doesn't work yet
-     * Testing Multiple consumer instances
-     */
-    public function xtestCustomConsumer() {
-        $this->produceMessages(3, "test.one");
-        $consumerService = "revinate_rabbit_mq.consumer.test_one";
-        for ($i = 0; $i < 3; $i++) {
-            //ob_start();
-            /** @var \Revinate\RabbitMqBundle\Consumer\Consumer $consumer */
-            $consumer = $this->getContainer()->get($consumerService);
-            try {
-                $consumer->consume(1);
-            } catch (AMQPTimeoutException $e) {
-//                $consumer->stopAllConsumers(1);
-                echo "timeout!";
-//                $this->assertSame(1, $this->countString($output, "Routing Key:test.one"), $this->debug($output));
-            }
-//            $output = ob_get_clean();
-//            var_dump($output);
-            sleep(2);
-        }
-    }
-
     public function testDeadletterMessageFromConsumer() {
         $count = 10;
         $this->produceMessages($count, "test.nine", "Deadlettered Message");
@@ -300,5 +275,20 @@ class ConsumerProducerTest extends BaseTestCase
         $producer->publish("Base Producer test", "test.zero");
         $output = $this->consumeMessages("test_zero", 1);
         $this->assertTrue($this->has($output, "Routing Key:test.zero"), $this->debug($output));
+    }
+
+    public function testConsumingAfterTimeout() {
+        $producer = $this->getContainer()->get("revinate_rabbit_mq.producer.test_producer");
+        $consumer = $this->getContainer()->get("revinate_rabbit_mq.consumer.test_one");
+        try {
+            $consumer->consume(1);
+        } catch(AMQPTimeoutException $e) {
+            // Caught exception
+        }
+        $producer->publish("test message", "test.one");
+        ob_start();
+        $consumer->consume(1);
+        $output = ob_get_clean();
+        $this->assertTrue($this->has($output, "Routing Key:test.one"), $this->debug($output));
     }
 }
