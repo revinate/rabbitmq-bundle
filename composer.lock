@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f6502151d93958fef641bc52b16394e3",
-    "content-hash": "6ee7a080e4a4df7275dc80e4d1e61324",
+    "hash": "d7666bfd81d4894efb313ccf3c316947",
+    "content-hash": "d01ffc688198976de76a43cdb1bd2890",
     "packages": [
         {
             "name": "php-amqplib/php-amqplib",
-            "version": "v2.6.3",
+            "version": "dev-fix-for-issues-415-and-261",
             "source": {
                 "type": "git",
-                "url": "https://github.com/php-amqplib/php-amqplib.git",
-                "reference": "fa2f0d4410a11008cb36b379177291be7ee9e4f6"
+                "url": "https://github.com/revinate/php-amqplib.git",
+                "reference": "e094c2eae07eda4c28c66fbf2056bbeacd759ed0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-amqplib/php-amqplib/zipball/fa2f0d4410a11008cb36b379177291be7ee9e4f6",
-                "reference": "fa2f0d4410a11008cb36b379177291be7ee9e4f6",
+                "url": "https://api.github.com/repos/revinate/php-amqplib/zipball/e094c2eae07eda4c28c66fbf2056bbeacd759ed0",
+                "reference": "e094c2eae07eda4c28c66fbf2056bbeacd759ed0",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,12 @@
                     "PhpAmqpLib\\": "PhpAmqpLib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "PhpAmqpLib\\Tests\\Functional\\": "tests/Functional",
+                    "PhpAmqpLib\\Tests\\Unit\\": "tests/Unit"
+                }
+            },
             "license": [
                 "LGPL-2.1"
             ],
@@ -75,7 +80,10 @@
                 "queue",
                 "rabbitmq"
             ],
-            "time": "2016-04-11 14:30:01"
+            "support": {
+                "source": "https://github.com/revinate/php-amqplib/tree/fix-for-issues-415-and-261"
+            },
+            "time": "2016-07-06 11:49:25"
         },
         {
             "name": "symfony/config",
@@ -2684,7 +2692,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "php-amqplib/php-amqplib": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
