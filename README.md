@@ -12,6 +12,9 @@ This bundle is inspired from [oldSoundRabbitMqBundle](https://github.com/videlal
 1. [RabbitMq Concepts](http://www.rabbitmq.com/resources/google-tech-talk-final/alexis-google-rabbitmq-talk.pdf)
 2. [Some other resources] (https://www.rabbitmq.com/how.html#quickstart) \(Optional\)
 
+## Dependencies
+1. This bundle depends upon [php-amqplib/php-amqplib](https://github.com/php-amqplib/php-amqplib).  There is currently a crashing issue on shutdown with versions between 2.4 and 2.6.3.  There is an underlying PHP bug that causes the crash.  We have submitted a pull request to php-amqplib with a workaround. 
+
 ***
 
 ### How to use this Bundle
