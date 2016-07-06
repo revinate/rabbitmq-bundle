@@ -205,7 +205,9 @@ class Consumer {
         if (isset($this->stoppedQueue[$queue->getName()])) {
             return;
         }
-        $this->getChannel()->basic_cancel($this->queueTags[$queue->getName()]);
+        if ($this->getChannel()->getConnection() && $this->getChannel()->getConnection()->isConnected()) {
+            $this->getChannel()->basic_cancel($this->queueTags[$queue->getName()]);
+        }
         $this->stoppedQueue[$queue->getName()] = true;
     }
 
