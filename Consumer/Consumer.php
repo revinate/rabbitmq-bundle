@@ -127,6 +127,7 @@ class Consumer {
             $this->stopAllConsumers();
             throw new AMQPTimeoutException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
+        $this->stopAllConsumers();
     }
 
     /**
@@ -192,6 +193,13 @@ class Consumer {
         foreach ($this->queues as $queue) {
             $this->stopConsuming($queue);
         }
+        $this->cleanUp();
+    }
+
+    /**
+     * Cleanup structures
+     */
+    protected function cleanUp() {
         // Cleanup queue flags and counters
         $this->stoppedQueue = array();
         $this->consumed = array();
