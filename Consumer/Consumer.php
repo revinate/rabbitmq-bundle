@@ -33,8 +33,8 @@ class Consumer {
     protected $name;
     /** @var AMQPConnection */
     protected $connection;
-    /** @var AMQPChannel  */
-    protected $channel;
+    /** @var string  */
+    protected $channelId;
     /** @var Queue[] */
     protected $queues;
     /** @var  string[] */
@@ -73,7 +73,7 @@ class Consumer {
         $this->name = $name;
         // Use first queues connection as the default connection
         $this->connection = $queues[0]->getConnection();
-        $this->channel = $this->connection->channel();
+        $this->channelId = $this->connection->get_free_channel_id();
         $this->queues = $queues;
 
         $this->validateQueues();
@@ -205,9 +205,7 @@ class Consumer {
         if (isset($this->stoppedQueue[$queue->getName()])) {
             return;
         }
-        if ($this->getChannel()->getConnection() && $this->getChannel()->getConnection()->isConnected()) {
-            $this->getChannel()->basic_cancel($this->queueTags[$queue->getName()]);
-        }
+        $this->getChannel()->basic_cancel($this->queueTags[$queue->getName()]);
         $this->stoppedQueue[$queue->getName()] = true;
     }
 
@@ -219,6 +217,7 @@ class Consumer {
      */
     public function ackOrNackMessage(Message $message, $processFlag, \Exception $e = null) {
         $amqpMessage = $message->getAmqpMessage();
+        /** @var AMQPChannel $channel */
         $channel = $amqpMessage->delivery_info['channel'];
         $deliveryTag = $amqpMessage->delivery_info['delivery_tag'];
         if ($processFlag === DeliveryResponse::MSG_REJECT_REQUEUE || false === $processFlag) {
@@ -292,7 +291,10 @@ class Consumer {
      * @return AMQPChannel
      */
     public function getChannel() {
-        return $this->channel;
+        if (!$this->connection->isConnected()) {
+            $this->connection->reconnect();
+        }
+        return $this->connection->channel($this->channelId);
     }
 
     /**

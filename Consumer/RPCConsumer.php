@@ -14,8 +14,6 @@ use Revinate\RabbitMqBundle\Queue\Queue;
 class RPCConsumer {
     /** @var  Producer */
     protected $producer;
-    /** @var AMQPChannel */
-    protected $channel;
     /** @var AMQPConnection  */
     protected $connection;
     /** @var string */

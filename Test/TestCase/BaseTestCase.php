@@ -85,4 +85,31 @@ class BaseTestCase extends WebTestCase {
         $result = ob_get_clean();
         return $result;
     }
+
+    /**
+     * @param mixed $results
+     * @return string
+     */
+    protected function debug($results) {
+        return "Results: " . print_r($results, true);
+    }
+
+    /**
+     * @param $payload
+     * @param $string
+     * @return bool
+     */
+    protected function has($payload, $string) {
+        return strpos($payload, $string) !== false;
+    }
+
+    /**
+     * @param $payload
+     * @param $string
+     * @return int
+     */
+    protected function countString($payload, $string) {
+        return substr_count($payload, $string);
+    }
+
 }

@@ -10,9 +10,6 @@ use Revinate\RabbitMqBundle\Test\TestCase\BaseTestCase;
 
 class ConsumerProducerTest extends BaseTestCase
 {
-    protected function debug($results) {
-        return "Results: " . print_r($results, true);
-    }
 
     protected function produceMessages($count, $routingKey, $message = null, $producerName = "test_producer") {
         /** @var Producer $producer */
@@ -41,19 +38,6 @@ class ConsumerProducerTest extends BaseTestCase
 
     protected function tearDown() {
         $this->clear();
-    }
-
-    /**
-     * @param $payload
-     * @param $string
-     * @return bool
-     */
-    protected function has($payload, $string) {
-        return strpos($payload, $string) !== false;
-    }
-
-    protected function countString($payload, $string) {
-        return substr_count($payload, $string);
     }
 
     public function testBasicProducerAndSingleConsumer() {

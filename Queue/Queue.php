@@ -27,9 +27,9 @@ class Queue {
     protected $autoDelete = false;
     /** @var boolean */
     protected $noWait = false;
-    /** @var Array */
+    /** @var array */
     protected $arguments = null;
-    /** @var  Array */
+    /** @var  array */
     protected $routingKeys = array();
     /** @var  string */
     protected $ticket = null;
@@ -37,6 +37,8 @@ class Queue {
     protected $isDeclared = false;
     /** @var bool  */
     protected $managed = true;
+    /** @var  string */
+    protected $channelId;
 
     /**
      * @param $name
@@ -57,7 +59,7 @@ class Queue {
             throw new InvalidQueueConfigurationException("Please specify Queue name and exchange to declare a queue.");
         }
         $this->connection = $exchange->getConnection();
-        $this->channel = $this->connection->channel();
+        $this->channelId = $this->connection->get_free_channel_id();
         $this->exchange = $exchange;
         $this->name = $name;
         $this->passive = $passive;
@@ -75,7 +77,7 @@ class Queue {
      * Declare Queue
      */
     public function declareQueue() {
-        $channel = $this->connection->channel();
+        $channel = $this->getChannel();
         $response = $channel->queue_declare(
             $this->getName(),
             $this->getPassive(),
@@ -260,7 +262,10 @@ class Queue {
      * @return \PhpAmqpLib\Channel\AMQPChannel
      */
     public function getChannel() {
-        return $this->channel;
+        if (!$this->connection->isConnected()) {
+            $this->connection->reconnect();
+        }
+        return $this->connection->channel($this->channelId);
     }
 
     /**

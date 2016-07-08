@@ -9,6 +9,7 @@ use Revinate\RabbitMqBundle\Encoder\EncoderInterface;
 use Revinate\RabbitMqBundle\Encoder\JsonEncoder;
 use Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
+use Revinate\RabbitMqBundle\LegacySupport\ServiceContainer;
 use Revinate\RabbitMqBundle\Message\Message;
 
 /**
@@ -22,8 +23,8 @@ class Producer {
     protected $exchange;
     /** @var EncoderInterface */
     protected $encoder;
-    /** @var \PhpAmqpLib\Channel\AMQPChannel */
-    protected $channel;
+    /** @var  string */
+    protected $channelId;
     /** @var  AMQPConnection */
     protected $connection;
 
@@ -35,8 +36,8 @@ class Producer {
         $this->name = $name;
         $this->exchange = $exchange;
         if ($exchange) {
-            $this->channel = $this->getExchange()->getConnection()->channel();
             $this->connection = $this->getExchange()->getConnection();
+            $this->channelId = $this->connection->get_free_channel_id();
         }
     }
 
@@ -81,9 +82,11 @@ class Producer {
     /**
      * @return \PhpAmqpLib\Channel\AMQPChannel
      */
-    public function getChannel()
-    {
-        return $this->channel;
+    public function getChannel() {
+        if (!$this->connection->isConnected()) {
+            $this->connection->reconnect();
+        }
+        return $this->connection->channel($this->channelId);
     }
 
     /**
@@ -125,7 +128,7 @@ class Producer {
         if (empty($this->exchange)) {
             throw new InvalidExchangeConfigurationException("No exchange found for this producer. Please use setExchange(exchange) or config to specify exchange for this producer.");
         }
-        $this->channel->basic_publish($amqpMessage, $this->getExchange()->getName(), $routingKey);
+        $this->getChannel()->basic_publish($amqpMessage, $this->getExchange()->getName(), $routingKey);
     }
 
     /**
