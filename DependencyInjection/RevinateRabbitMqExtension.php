@@ -186,7 +186,6 @@ class RevinateRabbitMqExtension extends Extension
             $defaultQosOptions =  array('prefetch_size' => 0, 'prefetch_count' => 1, 'global' => false);
             $config['qos_options'] = isset($config['qos_options']) ? array_replace($defaultQosOptions, $config['qos_options']) : $defaultQosOptions;
             $definition->addMethodCall('setQosOptions', array($config['qos_options']));
-            $definition->setShared(false);
 
             $this->container->setDefinition(sprintf('revinate_rabbit_mq.consumer.%s', $key), $definition);
         }
