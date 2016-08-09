@@ -69,4 +69,11 @@ class MockProducer extends Producer {
     public function consume() {
         return $this->queue->dequeue();
     }
+
+    /**
+     * @return bool
+     */
+    public function isEmpty() {
+        return $this->queue->isEmpty();
+    }
 }
