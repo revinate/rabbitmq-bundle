@@ -210,7 +210,7 @@ class Consumer {
      * @param \Revinate\RabbitMqBundle\Queue\Queue $queue
      */
     public function stopConsuming(Queue $queue) {
-        if (isset($this->stoppedQueue[$queue->getName()])) {
+        if (!isset($this->queueTags[$queue->getName()]) || isset($this->stoppedQueue[$queue->getName()])) {
             return;
         }
         $this->getChannel()->basic_cancel($this->queueTags[$queue->getName()]);
