@@ -17,6 +17,9 @@ class TestTenConsumer extends BaseConsumer implements ConsumerInterface {
     {
         echo "\nRouting Key:" . $message->getRoutingKey();
         echo "\nMessage: " . $this->toString($message->getData());
+        foreach ($message->getHeaders() as $key => $value) {
+            echo "\nHeader: " . $key . " = " . json_encode($value);
+        }
         throw new RejectDropStopWithErrorException("Somethings wrong! Consuming has stopped! Here is why!?");
     }
 }

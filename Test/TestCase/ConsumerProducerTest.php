@@ -275,4 +275,30 @@ class ConsumerProducerTest extends BaseTestCase
         $output = ob_get_clean();
         $this->assertTrue($this->has($output, "Routing Key:test.one"), $this->debug($output));
     }
+
+    public function testConsumeMessageHeaderValueTypes() {
+        $count = 1;
+        $now = new \DateTime();
+        $headers = array(
+            "stringHeader1" => array("S", "this_is_string_1"),
+            "stringHeader2" => "this_is_string_2",
+            "intHeader" => 8,
+            "floatHeader" => 3.14,
+            "boolHeader" => true,
+            "nullHeader" => null,
+            "dateTimeHeader" => $now,
+            "arrayHeader" => array("string1", "string2")
+        );
+        $message = new Message("data", "test.ten", $headers);
+        $this->produceMessages($count, "test.ten", $message);
+        $output = $this->consumeMessages("test_ten", $count);
+        $this->assertSame($count, $this->countString($output, 'Header: stringHeader1 = ["S","this_is_string_1"]'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: stringHeader2 = ["S","this_is_string_2"]'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: intHeader = ["I",8]'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: floatHeader = ["S","3.14"]'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: boolHeader = ["t",true]'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: nullHeader = ["V",null]'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: dateTimeHeader = ["T",' . $now->getTimestamp() . ']'), $this->debug($output));
+        $this->assertSame($count, $this->countString($output, 'Header: arrayHeader = ["A",'), $this->debug($output));
+    }
 }
