@@ -3,7 +3,9 @@
 namespace Revinate\RabbitMqBundle\Message;
 
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPAbstractCollection;
 use Revinate\RabbitMqBundle\Consumer\Consumer;
+use Revinate\RabbitMqBundle\Decorator\RevinateAMQPArray;
 use Revinate\RabbitMqBundle\Exchange\Exchange;
 use Revinate\RabbitMqBundle\Lib\DateHelper;
 use Revinate\RabbitMqBundle\Lib\TextHelper;
@@ -168,16 +170,25 @@ class Message {
     }
 
     /**
-     * @param $headers
+     * @param array $headers
      */
     protected function setHeaders($headers = null) {
         if ($headers) {
             $this->headers = array();
             foreach ($headers as $index => $header) {
-                $this->headers[$index] = is_array($header) ? $header : array('S', $header);
+                if (is_array($header) && isset($header[0]) && in_array($header[0], AMQPAbstractCollection::getSupportedDataTypes())) {
+                    // if header is already in the format of ['S', 'string'], then we are done
+                    $this->headers[$index] = $header;
+                } else {
+                    // if header is just the value (e.g. 'string'), then it needs to be encoded
+                    $amqpArray = new RevinateAMQPArray();
+                    $parts = $amqpArray->encodeValuePublic($header);
+                    $this->headers[$index] = array(AMQPAbstractCollection::getSymbolForDataType($parts[0]), $parts[1]);
+                }
             }
         }
     }
+
     /**
      * @return array
      */
