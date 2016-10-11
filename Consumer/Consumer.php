@@ -148,11 +148,16 @@ class Consumer {
      *   and process quits after timeout. Note that, buffer_wait doesn't help here since for us to flush the buffer,
      *   we need to receive atleast 1 message.
      *
+     * For both batch and single message consumers, the prefetch count should be less than the target. It makes no
+     * sense to have the more messages ready than to be consumed.
+     *
      * @return int
      */
     protected function getPrefetchCount() {
         $prefetchCount = $this->qosOptions['prefetch_count'];
-        if ($this->isBatchConsumer() && $this->qosOptions['prefetch_count'] < $this->getTarget()) {
+        // Case 1. For batch consumer, the prefetch_count should equal to target
+        // Case 2. For any consumer, the prefetch count won't make sense if it's larger than the target
+        if ($this->isBatchConsumer() || $prefetchCount > $this->getTarget()) {
             $prefetchCount = $this->getTarget();
         }
         return $prefetchCount;
