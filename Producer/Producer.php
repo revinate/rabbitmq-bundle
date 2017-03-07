@@ -120,6 +120,16 @@ class Producer {
 
     /**
      * @param Message $message
+     * @param $queueName
+     * @throws InvalidExchangeConfigurationException
+     */
+    public function publishToQueue(Message $message, $queueName) {
+        $amqpMessage = $this->encodeAndGetAMQPMessage($message);
+        $this->getChannel()->basic_publish($amqpMessage, "", $queueName);
+    }
+
+    /**
+     * @param Message $message
      * @param $routingKey
      * @throws \Revinate\RabbitMqBundle\Exceptions\InvalidExchangeConfigurationException
      */
