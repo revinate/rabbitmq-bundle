@@ -2,8 +2,8 @@
 
 namespace Revinate\RabbitMqBundle\Command;
 
+use PhpAmqpLib\Exception\AMQPIOWaitException;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
-use Revinate\RabbitMqBundle\Consumer\ConsumerManager;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -49,6 +49,8 @@ class ConsumerCommand extends ContainerAwareCommand {
         try {
             $consumer->consume($target);
         } catch (AMQPTimeoutException $e) {
+            ;
+        } catch (AMQPIOWaitException $e) {
             ;
         }
     }

@@ -297,6 +297,8 @@ Until our pull request goes through, you will need to add the following to your 
            $consumer->consume($prefetchCount);
        } catch (PhpAmqpLib\Exception\AMQPTimeoutException $e) {
            ;
+       } catch (PhpAmqpLib\Exception\AMQPIOWaitException $e) {
+           ;
        }
       ```
     * A consumer callback is implemented the same way it is done for Symfony2.
