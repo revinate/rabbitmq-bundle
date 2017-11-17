@@ -59,7 +59,16 @@ class RevinateRabbitMqExtension extends Extension
                 $config['port'],
                 $config['user'],
                 $config['password'],
-                $config['vhost']
+                $config['vhost'],
+                $config['insist'],
+                $config['login_method'],
+                $config['login_response'],
+                $config['locale'],
+                $config['connection_timeout'],
+                $config['read_write_timeout'],
+                $config['context'],
+                $config['keepalive'],
+                $config['heartbeat']
             ));
             $definition->setLazy(true);
 

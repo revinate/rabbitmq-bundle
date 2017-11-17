@@ -8,7 +8,8 @@ revinate_rabbit_mq:
             user:     'guest'
             password: 'guest'
             host:      'rabbitmq'
-            vhost:    '/'
+            vhost:     '/'
+            heartbeat: 1
     exchanges:
         test_topic.tx: { connection: test, type: topic }
         test_direct.tx: { connection: test, type: direct }
