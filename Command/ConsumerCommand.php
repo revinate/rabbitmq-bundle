@@ -43,10 +43,10 @@ class ConsumerCommand extends ContainerAwareCommand {
         $target = $target ?: 1;
         $consumerService = "revinate_rabbit_mq.consumer.$consumerName";
 
-        // Create batch or single consumer based on the type of consumer
-        /** @var \Revinate\RabbitMqBundle\Consumer\Consumer $consumer */
-        $consumer = $this->getContainer()->get($consumerService);
         try {
+            // Create batch or single consumer based on the type of consumer
+            /** @var \Revinate\RabbitMqBundle\Consumer\Consumer $consumer */
+            $consumer = $this->getContainer()->get($consumerService);
             $consumer->consume($target);
         } catch (AMQPTimeoutException $e) {
             ;
