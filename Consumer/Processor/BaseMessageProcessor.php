@@ -28,9 +28,6 @@ abstract class BaseMessageProcessor {
     /** @var  Queue */
     protected $queue;
 
-    /** max retries to ack/nack */
-    const MAX_RETRY_COUNT = 100;
-
     /**
      * @param Consumer $consumer
      */
@@ -89,20 +86,7 @@ abstract class BaseMessageProcessor {
         // Ack or Nack Messages
         foreach ($messages as $index => $message) {
             $processFlag = is_array($processFlagOrFlags) && isset($processFlagOrFlags[$index]) ? $processFlagOrFlags[$index] : $processFlagOrFlags;
-            $retry = true;
-            $retryCount = 0;
-            while($retry) {
-                try {
-                    $this->consumer->ackOrNackMessage($message, $processFlag, $exception);
-                    $retry = false;
-                } catch (\Exception $e) {
-                    ++$retryCount;
-                    if($retryCount > self::MAX_RETRY_COUNT){
-                        throw $e;
-                    }
-                    usleep(25000);//0.025 seconds
-                }
-            }
+            $this->consumer->ackOrNackMessage($message, $processFlag, $exception);
         }
     }
 
