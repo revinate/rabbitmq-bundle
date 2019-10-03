@@ -113,6 +113,21 @@ class ServiceContainer {
             $this->config['connections'][$name],
             $this->config['environment'][$this->env]['connections'][$name]
         );
+
+        if (is_array($connection['host'])) {
+            $hosts = [];
+            foreach ($connection['host'] as $host) {
+                $hosts[] = [
+                    'host' => $host,
+                    'port' => $connection['port'],
+                    'user' => $connection['user'],
+                    'password' => $connection['password'],
+                    'vhost' => $connection['vhost']
+                ];
+            }
+            return AMQPStreamConnection::create_connection($hosts);
+        }
+
         return new AMQPStreamConnection($connection['host'], $connection['port'], $connection['user'], $connection['password'], $connection['vhost']);
     }
 
